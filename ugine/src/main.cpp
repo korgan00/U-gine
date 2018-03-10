@@ -8,11 +8,11 @@
 #include "Shader.h"
 #include "Vertex.h"
 #include "Buffer.h"
-#include "utils.h"
 #include <array>
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include <memory>
 
 #define FULLSCREEN false
 
@@ -57,7 +57,7 @@ int main(int, char**) {
 
 	const char* vsCode = vertexShader.c_str();
 	const char* fsCode = fragmentShader.c_str();
-	shared_ptr<Shader> s = Shader::createShader(vsCode, fsCode);
+	std::shared_ptr<Shader> s = Shader::createShader(vsCode, fsCode);
 	if (Shader::getError() != "") {
 		std::cout << s->getError() << std::endl;
 		return -1;

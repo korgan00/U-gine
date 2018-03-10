@@ -2,10 +2,7 @@
 
 #include "common.h"
 #include "../lib/glew/glew.h"
-#include <vector>
 #include <memory>
-
-using namespace std;
 
 
 class Shader {
@@ -25,7 +22,7 @@ protected:
 
 public:
 
-	static shared_ptr<Shader> createShader(const char* vsCode, const char* fsCode);
+	static std::shared_ptr<Shader> createShader(const char* vsCode, const char* fsCode);
 
 
 	// Devuelve el identificador de OpenGL del programa

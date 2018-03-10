@@ -1,5 +1,7 @@
 #include "Shader.h"
 
+using namespace std;
+
 #define CHECK_ERR if (_errorLog != nullptr) return;
 
 char* Shader::_errorLog  = nullptr;

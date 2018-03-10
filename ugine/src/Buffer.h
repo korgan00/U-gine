@@ -2,7 +2,6 @@
 
 #include "Shader.h"
 #include "Vertex.h"
-using namespace std;
 
 
 class Buffer {
