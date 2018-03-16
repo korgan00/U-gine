@@ -1,4 +1,5 @@
 #include "Shader.h"
+#include "Vertex.h"
 
 using namespace std;
 
@@ -7,23 +8,22 @@ using namespace std;
 char* Shader::_errorLog  = nullptr;
 
 shared_ptr<Shader> Shader::createShader(const char* vsCode, const char* fsCode) {
-	shared_ptr<Shader> shader(new Shader(vsCode, fsCode), destroy);
+	shared_ptr<Shader> shader(new Shader(vsCode, fsCode), [](Shader* s) { delete s; });
 	if (Shader::_errorLog == nullptr) {
 		return shader;
 	}
 	return nullptr;
 }
 Shader::~Shader() {
-	glDeleteProgram(_programId); // Don't leak the shader.
+	if (_programId != 0) {
+		glDeleteProgram(_programId);
+	}
 	if (_errorLog != nullptr) {
 		delete _errorLog;
 	}
 }
-void Shader::destroy(Shader* s) {
-	delete s;
-}
 
-Shader::Shader(const char* vsCode, const char* fsCode) {
+Shader::Shader(const char* vsCode, const char* fsCode) : _programId(0) {
 	if (_errorLog != nullptr) {
 		delete _errorLog;
 	}
@@ -37,6 +37,8 @@ Shader::Shader(const char* vsCode, const char* fsCode) {
 	glAttachShader(_programId, vsId);
 	glAttachShader(_programId, fsId);
 	glLinkProgram(_programId);
+	glDeleteShader(vsId);
+	glDeleteShader(fsId);
 	glGetProgramiv(_programId, GL_LINK_STATUS, &isLinked);
 	if (isLinked == GL_FALSE) {
 		GLint maxLength = 0;
@@ -52,8 +54,6 @@ Shader::Shader(const char* vsCode, const char* fsCode) {
 	CHECK_ERR;
 	_vposLoc = glGetAttribLocation(_programId, "vpos");
 
-	glDeleteShader(vsId); // Don't leak the shader.
-	glDeleteShader(fsId); // Don't leak the shader.
 }
 
 GLuint Shader::createSubshader(const char* code, GLuint type) {
@@ -105,8 +105,12 @@ void Shader::use() const {
 // Activa la escritura de las variables attribute,
 // y especifica su formato
 void Shader::setupAttribs() const {
+	if (_vposLoc == -1) {
+		return;
+	}
+
 	glEnableVertexAttribArray(_vposLoc);
-	glVertexAttribPointer(_vposLoc, 3, GL_FLOAT, false, sizeof(GLfloat) * 3, 0);
+	glVertexAttribPointer(_vposLoc, 3, GL_FLOAT, false, sizeof(GLfloat) * 3, reinterpret_cast<void*>(offsetof(Vertex, position)));
 }
 
 // Obtiene la localización de una variable uniform
@@ -116,17 +120,17 @@ GLint Shader::getLocation(const char* name) const {
 
 // Da valor a una variable uniform
 void Shader::setInt(int loc, int val) {
-	glUniform1i(loc, val);
+	if (loc >= 0) glUniform1i(loc, val);
 }
 void Shader::setFloat(int loc, float val) {
-	glUniform1f(loc, val);
+	if (loc >= 0) glUniform1f(loc, val);
 }
 void Shader::setVec3(int loc, const glm::vec3& vec) {
-	glUniform3fv(loc, 1, glm::value_ptr(vec));
+	if (loc >= 0) glUniform3fv(loc, 1, glm::value_ptr(vec));
 }
 void Shader::setVec4(int loc, const glm::vec4& vec) {
-	glUniform4fv(loc, 1, glm::value_ptr(vec));
+	if (loc >= 0) glUniform4fv(loc, 1, glm::value_ptr(vec));
 }
 void Shader::setMatrix(int loc, const glm::mat4& matrix) {
-	glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(matrix));
+	if (loc >= 0) glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(matrix));
 }

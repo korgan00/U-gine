@@ -18,7 +18,6 @@ protected:
 
 	Shader(const char* vsCode, const char* fsCode);
 	~Shader();
-	static void destroy(Shader* s);
 
 public:
 

@@ -7,7 +7,7 @@
 class Mesh {
 protected:
 
-	std::vector<std::pair<std::shared_ptr<Buffer>, std::shared_ptr<Shader>>> bufferList;
+	std::vector<std::pair<std::shared_ptr<Buffer>, std::shared_ptr<Shader>>> _bufferList;
 
 public:
 	

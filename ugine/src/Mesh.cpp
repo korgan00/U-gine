@@ -11,22 +11,22 @@ Mesh::Mesh() {
 
 void Mesh::addBuffer(const shared_ptr<Buffer>& buffer,
 					 const shared_ptr<Shader>& shader = nullptr) {
-	bufferList.push_back(pair<std::shared_ptr<Buffer>, std::shared_ptr<Shader>>(buffer, shader != nullptr ? shader : State::defaultShader));
+	_bufferList.push_back(pair<std::shared_ptr<Buffer>, std::shared_ptr<Shader>>(buffer, shader != nullptr ? shader : State::defaultShader));
 }
 
 
 size_t Mesh::getNumBuffers() const {
-	return bufferList.size();
+	return _bufferList.size();
 }
 const shared_ptr<Buffer>& Mesh::getBuffer(size_t index) const {
-	return bufferList[index].first;
+	return _bufferList[index].first;
 }
 shared_ptr<Buffer>& Mesh::getBuffer(size_t index) {
-	return bufferList[index].first;
+	return _bufferList[index].first;
 }
 void Mesh::draw() {
-	GLuint amount = bufferList.size();
+	GLuint amount = _bufferList.size();
 	for (int i = 0; i < amount; ++i) {
-		bufferList[i].first->draw(*bufferList[i].second);
+		_bufferList[i].first->draw(*_bufferList[i].second);
 	}
 }
