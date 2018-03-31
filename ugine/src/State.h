@@ -1,5 +1,6 @@
 #pragma once
 
+#include "common.h"
 #include <memory>
 #include "Shader.h"
 
@@ -11,5 +12,4 @@ public:
 	static glm::mat4 				projectionMatrix;
 	static glm::mat4 				viewMatrix;
 	static glm::mat4 				modelMatrix;
-
 };

@@ -4,7 +4,7 @@
 #include "common.h"
 #include "Entity.h"
 
-class Camera : Entity {
+class Camera : public Entity {
 protected:
 
 	glm::vec3 _clrColor;

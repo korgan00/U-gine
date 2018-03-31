@@ -1,13 +1,14 @@
 #pragma once
 
 #include <memory>
-#include <list>
+#include <vector>
+#include "Camera.h"
 #include "Entity.h"
 
 class World {
 private:
-	std::list<std::shared_ptr<Entity>> entityList;
-	
+    std::vector<std::shared_ptr<Entity>> entityList;
+    std::vector<std::shared_ptr<Camera>> cameraList;
 
 public:
 	void addEntity(const std::shared_ptr<Entity>& entity);

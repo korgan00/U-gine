@@ -1,7 +1,7 @@
 #include "Buffer.h"
 
 
-Buffer::Buffer(Vertex* vertexData, GLuint numVertex, GLushort* indexData, GLuint numIndex) {
+Buffer::Buffer(Vertex* vertexData, size_t numVertex, GLushort* indexData, size_t numIndex) {
 	_vboSize = numVertex;
 	_eboSize = numIndex;
 
@@ -22,5 +22,5 @@ void Buffer::draw(const Shader& shader) const {
 	glBindBuffer(GL_ARRAY_BUFFER, _vbo);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ebo);
 	shader.setupAttribs();
-	glDrawElements(GL_TRIANGLES, _eboSize, GL_UNSIGNED_SHORT, 0);
+	glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(_eboSize), GL_UNSIGNED_SHORT, 0);
 }
