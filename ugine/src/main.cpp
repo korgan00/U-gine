@@ -56,8 +56,6 @@ int main(int, char**) {
     std::shared_ptr<Camera> mainCamera = createMainCamera();
     std::shared_ptr<World> world = createWorld(mainCamera);
 
-	float rotationAngle = 0;
-
 	float lastTime = static_cast<float>(glfwGetTime());
 	while (!glfwWindowShouldClose(window) && !glfwGetKey(window, GLFW_KEY_ESCAPE)) {
 		// update delta time
@@ -65,17 +63,10 @@ int main(int, char**) {
 		float deltaTime = newTime - lastTime;
 		lastTime = newTime;
 
-		rotationAngle += 32 * deltaTime;
-        
         updateMainCameraViewport(mainCamera, window);
-
-
-		//glm::mat4 matRot = glm::rotate(glm::mat4(), glm::radians(rotationAngle), glm::vec3(0.0f, 1.0f, 0.0f));
 
         world->update(deltaTime);
         world->draw();
-
-
 
 		// update swap chain & process events
 		glfwSwapBuffers(window);
