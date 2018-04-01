@@ -1,8 +1,6 @@
-
 #include "Model.h"
 #include "common.h"
 #include "State.h"
-
 
 
 Model::Model(const std::shared_ptr<Mesh>& mesh) : _mesh(mesh) {}
