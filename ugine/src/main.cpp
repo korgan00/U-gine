@@ -47,7 +47,6 @@ int main(int, char**) {
     if (!window) { return -1; }
     if (!init()) { return -1; }
 
-
     std::shared_ptr<Shader> shader = createBasicShader();
 	if (!shader) { return -1; }
 
