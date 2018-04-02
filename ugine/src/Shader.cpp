@@ -18,9 +18,6 @@ Shader::~Shader() {
 	if (_programId != 0) {
 		glDeleteProgram(_programId);
 	}
-	if (_errorLog != nullptr) {
-		delete _errorLog;
-	}
 }
 
 Shader::Shader(const char* vsCode, const char* fsCode) : _programId(0) {
@@ -52,8 +49,8 @@ Shader::Shader(const char* vsCode, const char* fsCode) : _programId(0) {
 		glDeleteProgram(_programId); // Don't leak the shader.
 	}
 	CHECK_ERR;
-	_vposLoc = glGetAttribLocation(_programId, "vpos");
-
+    _locVPos = glGetAttribLocation(_programId, "vpos");
+    _locUV = glGetAttribLocation(_programId, "v_uv");
 }
 
 GLuint Shader::createSubshader(const char* code, GLuint type) {
@@ -105,12 +102,13 @@ void Shader::use() const {
 // Activa la escritura de las variables attribute,
 // y especifica su formato
 void Shader::setupAttribs() const {
-	if (_vposLoc == -1) {
+	if (_locVPos == -1 || _locUV == -1) {
 		return;
 	}
-
-	glEnableVertexAttribArray(_vposLoc);
-	glVertexAttribPointer(_vposLoc, 3, GL_FLOAT, false, sizeof(GLfloat) * 3, reinterpret_cast<void*>(offsetof(Vertex, position)));
+    glEnableVertexAttribArray(_locVPos);
+    glVertexAttribPointer(_locVPos, 3, GL_FLOAT, false, sizeof(GLfloat) * 5, reinterpret_cast<void*>(offsetof(Vertex, position)));
+    glEnableVertexAttribArray(_locUV);
+    glVertexAttribPointer(_locUV, 2, GL_FLOAT, false, sizeof(GLfloat) * 5, reinterpret_cast<void*>(offsetof(Vertex, texCoords)));
 }
 
 // Obtiene la localización de una variable uniform

@@ -11,5 +11,5 @@ void Model::draw() {
 }
 
 void Model::update(float deltaTime) {
-    _rotation = glm::rotate(_rotation, glm::radians(32 * deltaTime), glm::vec3(0.0f, 1.0f, 0.0f));
+    _rotation = glm::rotate(_rotation, glm::radians(64 * deltaTime), glm::vec3(0.0f, 1.0f, 0.0f));
 }

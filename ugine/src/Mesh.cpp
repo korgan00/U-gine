@@ -1,5 +1,3 @@
-
-
 #include "Mesh.h"
 #include "State.h"
 
@@ -10,8 +8,8 @@ Mesh::Mesh() {
 
 
 void Mesh::addBuffer(const shared_ptr<Buffer>& buffer,
-					 const shared_ptr<Shader>& shader) {
-	_bufferList.push_back(pair<std::shared_ptr<Buffer>, std::shared_ptr<Shader>>(buffer, shader != nullptr ? shader : State::defaultShader));
+					 const Material& material) {
+	_bufferList.push_back(pair<std::shared_ptr<Buffer>, Material>(buffer, material));
 }
 
 
@@ -24,14 +22,19 @@ const shared_ptr<Buffer>& Mesh::getBuffer(size_t index) const {
 shared_ptr<Buffer>& Mesh::getBuffer(size_t index) {
 	return _bufferList[index].first;
 }
+const Material& Mesh::getMaterial(size_t index) const {
+    return _bufferList[index].second;
+}
+Material& Mesh::getMaterial(size_t index) {
+    return _bufferList[index].second;
+}
+
 void Mesh::draw() {
 	size_t amount = _bufferList.size();
     glm::mat4 mvp = State::projectionMatrix * State::viewMatrix * State::modelMatrix;
 
 	for (size_t i = 0; i < amount; ++i) {
-        _bufferList[i].second->use();
-        //GLint locMVP = _bufferList[i].second->getLocation("mvp");
-        _bufferList[i].second->setMatrix(_bufferList[i].second->getLocation("mvp"), mvp);
-		_bufferList[i].first->draw(*_bufferList[i].second);
+        _bufferList[i].second.prepare();
+		_bufferList[i].first->draw(*(_bufferList[i].second.getShader()));
 	}
 }

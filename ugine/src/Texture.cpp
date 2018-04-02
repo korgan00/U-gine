@@ -4,10 +4,15 @@
 #include "stb_image.h"
 
 Texture::Texture(int w, int h, GLuint id) : _size(w, h), _texId(id) {}
+Texture::~Texture() {
+    if (_texId != 0) {
+        glDeleteTextures(1, &_texId);
+    }
+}
 
 std::shared_ptr<Texture> Texture::load(const char* filename) {
-    int width, height, components;
-    stbi_uc* image = stbi_load(filename, &width, &height, &components, 0);
+    int width, height;
+    stbi_uc* image = stbi_load(filename, &width, &height, nullptr, 4);
 
     // break if load fails
     if (image == nullptr) {
@@ -19,12 +24,12 @@ std::shared_ptr<Texture> Texture::load(const char* filename) {
 
     glGenTextures(1, &texId);
     glBindTexture(GL_TEXTURE_2D, texId);
-
+    
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
+    
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
     glGenerateMipmap(GL_TEXTURE_2D);
 
@@ -32,7 +37,7 @@ std::shared_ptr<Texture> Texture::load(const char* filename) {
     stbi_image_free(image);
 
     // end this
-    std::shared_ptr<Texture> tex(new Texture(width, height, texId));
+    std::shared_ptr<Texture> tex(new Texture(width, height, texId), [](Texture* t) { delete t; });
     return tex;
 }
 

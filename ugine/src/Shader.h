@@ -11,7 +11,8 @@ protected:
 	static char* _errorLog;
 
 	GLuint _programId;
-	GLuint _vposLoc;
+    GLuint _locVPos;
+    GLuint _locUV;
 
 	GLuint createSubshader(const char* code, GLuint type);
 	void setErrorLength(GLuint length);

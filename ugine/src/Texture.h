@@ -10,6 +10,7 @@ private:
     GLuint _texId;
 
     Texture(int w, int h, GLuint id);
+    ~Texture();
 
 public:
     static std::shared_ptr<Texture>	load(const char* filename);

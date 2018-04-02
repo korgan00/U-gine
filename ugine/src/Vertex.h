@@ -4,5 +4,5 @@
 
 typedef struct{
     glm::vec3 position;
-    glm::vec3 texCoords;
+    glm::vec2 texCoords;
 } Vertex;

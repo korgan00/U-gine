@@ -31,12 +31,55 @@ std::shared_ptr<Camera> createMainCamera();
 std::shared_ptr<Shader> createBasicShader();
 void updateMainCameraViewport(std::shared_ptr<Camera> mainCamera, GLFWwindow* window);
 
-Vertex triangleVert[3] = {  glm::vec3( 0.0f,  1.0f, 0.0f),
-							glm::vec3(-1.0f, -1.0f, 0.0f),
-							glm::vec3( 1.0f, -1.0f, 0.0f)
+Vertex triangleVert[3] = { { glm::vec3( 0.0f,  1.0f, 0.0f), glm::vec2(0.0f, 1.0f) },
+                           { glm::vec3(-1.0f, -1.0f, 0.0f), glm::vec2(0.0f, 1.0f) },
+                           { glm::vec3( 1.0f, -1.0f, 0.0f), glm::vec2(0.0f, 1.0f) }
 						 };
 
-GLushort triangleIdx[3] = { 0, 1, 2 };
+Vertex cubeFrontVert[16] = {
+    { glm::vec3(-0.5f,  0.5f, 0.5f), glm::vec2(0.0f, 1.0f) },
+    { glm::vec3(-0.5f, -0.5f, 0.5f), glm::vec2(0.0f, 0.0f) },
+    { glm::vec3( 0.5f, -0.5f, 0.5f), glm::vec2(1.0f, 0.0f) },
+    { glm::vec3( 0.5f,  0.5f, 0.5f), glm::vec2(1.0f, 1.0f) },
+
+    { glm::vec3(-0.5f,  0.5f, -0.5f), glm::vec2(1.0f, 1.0f) },
+    { glm::vec3(-0.5f, -0.5f, -0.5f), glm::vec2(1.0f, 0.0f) },
+    { glm::vec3( 0.5f, -0.5f, -0.5f), glm::vec2(0.0f, 0.0f) },
+    { glm::vec3( 0.5f,  0.5f, -0.5f), glm::vec2(0.0f, 1.0f) },
+
+    { glm::vec3( 0.5f,  0.5f,  0.5f), glm::vec2(0.0f, 1.0f) },
+    { glm::vec3( 0.5f, -0.5f,  0.5f), glm::vec2(0.0f, 0.0f) },
+    { glm::vec3( 0.5f, -0.5f, -0.5f), glm::vec2(1.0f, 0.0f) },
+    { glm::vec3( 0.5f,  0.5f, -0.5f), glm::vec2(1.0f, 1.0f) },
+
+    { glm::vec3(-0.5f,  0.5f, -0.5f), glm::vec2(0.0f, 1.0f) },
+    { glm::vec3(-0.5f, -0.5f, -0.5f), glm::vec2(0.0f, 0.0f) },
+    { glm::vec3(-0.5f, -0.5f,  0.5f), glm::vec2(1.0f, 0.0f) },
+    { glm::vec3(-0.5f,  0.5f,  0.5f), glm::vec2(1.0f, 1.0f) }
+};
+Vertex cubeTopVert[8] = {
+    { glm::vec3(-0.5f,  0.5f, -0.5f), glm::vec2(0.0f, 1.0f) },
+    { glm::vec3(-0.5f,  0.5f,  0.5f), glm::vec2(0.0f, 0.0f) },
+    { glm::vec3( 0.5f,  0.5f,  0.5f), glm::vec2(1.0f, 0.0f) },
+    { glm::vec3( 0.5f,  0.5f, -0.5f), glm::vec2(1.0f, 1.0f) },
+
+    { glm::vec3(-0.5f, -0.5f,  0.5f), glm::vec2(0.0f, 1.0f) },
+    { glm::vec3(-0.5f, -0.5f, -0.5f), glm::vec2(0.0f, 0.0f) },
+    { glm::vec3( 0.5f, -0.5f, -0.5f), glm::vec2(1.0f, 0.0f) },
+    { glm::vec3( 0.5f, -0.5f,  0.5f), glm::vec2(1.0f, 1.0f) },
+};
+
+GLushort triangleIdx[6] = { 0, 1, 2 };
+GLushort cubeFrontIdx[24] = {
+    0, 1, 2, 0, 2, 3,
+    7, 6, 5, 7, 5, 4,
+    8, 9, 10, 8, 10, 11,
+    12, 13, 14, 12, 14, 15
+};
+GLushort cubeTopIdx[12] = {
+    0, 1, 2, 0, 2, 3,
+    4, 5, 6, 4, 6, 7
+};
 
 GLint Z_POS[3] = {  0, -3, -6 };
 GLint X_POS[3] = { -3,  0,  3 };
@@ -112,30 +155,34 @@ std::shared_ptr<World> createWorld(std::shared_ptr<Camera> mainCamera) {
     std::shared_ptr<World> world = std::make_shared<World>();
     world->addEntity(mainCamera);
 
-    std::shared_ptr<Buffer> triangleBuffer = std::make_shared<Buffer>(triangleVert, sizeof(triangleVert) / sizeof(Vertex),
-                                                                      triangleIdx, sizeof(triangleIdx) / sizeof(GLushort));
-    std::shared_ptr<Mesh> triangleMesh = std::make_shared<Mesh>();
-    triangleMesh->addBuffer(triangleBuffer);
+    std::shared_ptr<Mesh> cubeMesh = std::make_shared<Mesh>();
 
-    for (int i = 0; i < 3; ++i) {
-        for (int j = 0; j < 3; ++j) {
-            std::shared_ptr<Model> triangle = std::make_shared<Model>(triangleMesh);
-            triangle->setPosition(glm::vec3(X_POS[i], 0.0f, Z_POS[j]));
-            triangle->setRotation(glm::quat());
-            triangle->setScale(glm::vec3(1.0f, 1.0f, 1.0f));
+    std::shared_ptr<Buffer> cubeFrontBuffer = std::make_shared<Buffer>(cubeFrontVert, sizeof(cubeFrontVert) / sizeof(Vertex),
+                                                                       cubeFrontIdx, sizeof(cubeFrontIdx) / sizeof(GLushort));
+    cubeMesh->addBuffer(cubeFrontBuffer, Material(Texture::load("data/front.png")));
 
-            world->addEntity(triangle);
-        }
-    }
+
+    std::shared_ptr<Buffer> cubeTopBuffer = std::make_shared<Buffer>(cubeTopVert, sizeof(cubeTopVert) / sizeof(Vertex),
+                                                                     cubeTopIdx, sizeof(cubeTopIdx) / sizeof(GLushort));
+    cubeMesh->addBuffer(cubeTopBuffer, Material(Texture::load("data/top.png")));
+
+
+    std::shared_ptr<Model> cubeModel = std::make_shared<Model>(cubeMesh);
+    cubeModel->setPosition(glm::vec3());
+    cubeModel->setRotation(glm::quat());
+    cubeModel->setScale(glm::vec3(1.0f, 1.0f, 1.0f));
+
+    world->addEntity(cubeModel);
 
     return world;
 }
 
 std::shared_ptr<Camera> createMainCamera() {
     std::shared_ptr<Camera> mainCamera = std::make_shared<Camera>();
-    mainCamera->setClearColor(glm::vec3(0.0f, 0.0f, 0.0f));
-    mainCamera->setPosition(glm::vec3(0.0f, 0.0f, 6.0f));
-    mainCamera->setRotation(glm::quat());
+    mainCamera->setClearColor(glm::vec3(1.0f, 1.0f, 1.0f));
+    mainCamera->setPosition(glm::vec3(0.0f, 1.0f, 3.0f));
+    glm::quat rot = glm::rotate(glm::quat(), glm::radians(20.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    mainCamera->setRotation(rot);
     
     return mainCamera;
 }
@@ -143,7 +190,7 @@ std::shared_ptr<Camera> createMainCamera() {
 void updateMainCameraViewport(std::shared_ptr<Camera> mainCamera, GLFWwindow* window) {
     int screenWidth, screenHeight;
     glfwGetWindowSize(window, &screenWidth, &screenHeight);
-    mainCamera->setProjection(glm::perspective(glm::half_pi<float>(), screenWidth / (float)screenHeight, 0.1f, 100.0f));
+    mainCamera->setProjection(glm::perspective(glm::pi<float>()/3.0f, screenWidth / (float)screenHeight, 0.1f, 100.0f));
     mainCamera->setViewport(glm::ivec4(0, 0, screenWidth, screenHeight));
 
     std::stringstream ss;
@@ -164,7 +211,7 @@ std::shared_ptr<Shader> createBasicShader() {
     const char* fsCode = fragmentShader.c_str();
     std::shared_ptr<Shader> s = Shader::createShader(vsCode, fsCode);
     if (Shader::getError() != "") {
-        std::cout << s->getError() << std::endl;
+        std::cout << Shader::getError() << std::endl;
         return nullptr;
     }
     return s;
