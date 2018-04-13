@@ -15,10 +15,7 @@ void World::addEntity(const shared_ptr<Entity>& entity) {
 }
 
 void World::removeEntity(const shared_ptr<Entity>& entity) {
-    entityIt it = entityList.begin();
-
-    while (*it != entity && it != entityList.end()) it++;
-
+    entityIt it = find(entityList.begin(), entityList.end(), entity);
     if (it != entityList.end()) {
         entityList.erase(it);
     }
@@ -26,12 +23,10 @@ void World::removeEntity(const shared_ptr<Entity>& entity) {
 
     shared_ptr<Camera> camera = dynamic_pointer_cast<Camera>(entity);
     if (camera) {
-        cameraIt it = cameraList.begin();
+		cameraIt camIt = find(cameraList.begin(), cameraList.end(), camera);
 
-        while (*it != entity && it != cameraList.end()) it++;
-
-        if (it != cameraList.end()) {
-            cameraList.erase(it);
+        if (camIt != cameraList.end()) {
+            cameraList.erase(camIt);
         }
     }
 }

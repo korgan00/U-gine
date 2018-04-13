@@ -6,7 +6,8 @@
 
 class State {
 protected:
-
+	State();
+	~State();
 public:
 	static std::shared_ptr<Shader>	defaultShader;
 	static glm::mat4 				projectionMatrix;

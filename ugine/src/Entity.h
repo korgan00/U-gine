@@ -1,6 +1,7 @@
 #pragma once
 
 #include "common.h"
+#include <functional>
 
 class Entity {
 protected:

@@ -106,9 +106,9 @@ void Shader::setupAttribs() const {
 		return;
 	}
     glEnableVertexAttribArray(_locVPos);
-    glVertexAttribPointer(_locVPos, 3, GL_FLOAT, false, sizeof(GLfloat) * 5, reinterpret_cast<void*>(offsetof(Vertex, position)));
+    glVertexAttribPointer(_locVPos, 3, GL_FLOAT, false, sizeof(Vertex), reinterpret_cast<void*>(offsetof(Vertex, position)));
     glEnableVertexAttribArray(_locUV);
-    glVertexAttribPointer(_locUV, 2, GL_FLOAT, false, sizeof(GLfloat) * 5, reinterpret_cast<void*>(offsetof(Vertex, texCoords)));
+    glVertexAttribPointer(_locUV, 2, GL_FLOAT, false, sizeof(Vertex), reinterpret_cast<void*>(offsetof(Vertex, texCoords)));
 }
 
 // Obtiene la localización de una variable uniform

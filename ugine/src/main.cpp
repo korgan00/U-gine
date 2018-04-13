@@ -27,7 +27,7 @@ bool init();
 
 
 std::shared_ptr<World> createWorld(std::shared_ptr<Camera> mainCamera);
-std::shared_ptr<Camera> createMainCamera();
+std::shared_ptr<Camera> createMainCamera(GLFWwindow* window);
 std::shared_ptr<Shader> createBasicShader();
 void updateMainCameraViewport(std::shared_ptr<Camera> mainCamera, GLFWwindow* window);
 
@@ -71,9 +71,9 @@ Vertex cubeTopVert[8] = {
 
 GLushort triangleIdx[6] = { 0, 1, 2 };
 GLushort cubeFrontIdx[24] = {
-    0, 1, 2, 0, 2, 3,
-    7, 6, 5, 7, 5, 4,
-    8, 9, 10, 8, 10, 11,
+     0,  1,  2,  0,  2,  3,
+     7,  6,  5,  7,  5,  4,
+     8,  9, 10,  8, 10, 11,
     12, 13, 14, 12, 14, 15
 };
 GLushort cubeTopIdx[12] = {
@@ -95,7 +95,7 @@ int main(int, char**) {
 
     State::defaultShader = shader;
 
-    std::shared_ptr<Camera> mainCamera = createMainCamera();
+    std::shared_ptr<Camera> mainCamera = createMainCamera(window);
     std::shared_ptr<World> world = createWorld(mainCamera);
 
 	float lastTime = static_cast<float>(glfwGetTime());
@@ -171,17 +171,25 @@ std::shared_ptr<World> createWorld(std::shared_ptr<Camera> mainCamera) {
     cubeModel->setPosition(glm::vec3());
     cubeModel->setRotation(glm::quat());
     cubeModel->setScale(glm::vec3(1.0f, 1.0f, 1.0f));
-
+	
+	cubeModel->setUpdateCB([cubeModel](float dt) {
+		glm::quat r = glm::rotate(glm::quat(), dt, glm::vec3(0.0f, 1.0f, 0.0f));
+		cubeModel->setRotation(cubeModel->getRotation()*r);
+	});
+	
     world->addEntity(cubeModel);
 
     return world;
 }
 
-std::shared_ptr<Camera> createMainCamera() {
-    std::shared_ptr<Camera> mainCamera = std::make_shared<Camera>();
+std::shared_ptr<Camera> createMainCamera(GLFWwindow* window) {
+	int screenWidth, screenHeight;
+	glfwGetWindowSize(window, &screenWidth, &screenHeight);
+
+    std::shared_ptr<Camera> mainCamera = std::make_shared<Camera>(glm::ivec2(screenWidth, screenHeight));
     mainCamera->setClearColor(glm::vec3(1.0f, 1.0f, 1.0f));
     mainCamera->setPosition(glm::vec3(0.0f, 1.0f, 3.0f));
-    glm::quat rot = glm::rotate(glm::quat(), glm::radians(20.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    glm::quat rot = glm::rotate(glm::quat(), glm::radians(-20.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     mainCamera->setRotation(rot);
     
     return mainCamera;
@@ -190,7 +198,7 @@ std::shared_ptr<Camera> createMainCamera() {
 void updateMainCameraViewport(std::shared_ptr<Camera> mainCamera, GLFWwindow* window) {
     int screenWidth, screenHeight;
     glfwGetWindowSize(window, &screenWidth, &screenHeight);
-    mainCamera->setProjection(glm::perspective(glm::pi<float>()/3.0f, screenWidth / (float)screenHeight, 0.1f, 100.0f));
+    mainCamera->setProjection(glm::perspective(glm::pi<float>()/3.0f, screenWidth / static_cast<float>(screenHeight), 0.1f, 100.0f));
     mainCamera->setViewport(glm::ivec4(0, 0, screenWidth, screenHeight));
 
     std::stringstream ss;

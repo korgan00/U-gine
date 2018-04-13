@@ -26,7 +26,11 @@ void Camera::setClearColor(const glm::vec3& color) {
 
 void Camera::prepare() {
 	State::projectionMatrix = _projection;
-	State::viewMatrix = glm::translate(glm::rotate(glm::mat4(), -glm::angle(_rotation), -glm::axis(_rotation)), -_position);
+
+#define ROTATE(m) glm::rotate(m, -glm::angle(_rotation), glm::axis(_rotation))
+#define TRANSLATE(m) glm::translate(m, -_position)
+
+	State::viewMatrix = TRANSLATE(ROTATE(glm::mat4()));
 	glViewport(_viewport.x, _viewport.y, _viewport.z, _viewport.w);
 	glScissor(_viewport.x, _viewport.y, _viewport.z, _viewport.w);
 	glClearColor(_clrColor.r, _clrColor.g, _clrColor.b, 1);

@@ -31,7 +31,7 @@ Material& Mesh::getMaterial(size_t index) {
 
 void Mesh::draw() {
 	size_t amount = _bufferList.size();
-    glm::mat4 mvp = State::projectionMatrix * State::viewMatrix * State::modelMatrix;
+    //glm::mat4 mvp = State::projectionMatrix * State::viewMatrix * State::modelMatrix;
 
 	for (size_t i = 0; i < amount; ++i) {
         _bufferList[i].second.prepare();
