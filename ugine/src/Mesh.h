@@ -25,4 +25,6 @@ public:
 
 	void draw();
 
+	static std::shared_ptr<Mesh> load(const char* filename, const std::shared_ptr<Shader>& shader = nullptr);
+
 };

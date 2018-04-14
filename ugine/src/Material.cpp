@@ -3,8 +3,7 @@
 
 
 Material::Material( const std::shared_ptr<Texture>& tex,
-                    const std::shared_ptr<Shader>& shader) 
-    : _tex(tex) {
+                    const std::shared_ptr<Shader>& shader) : _tex(tex) {
     setShader(shader);
 }
 

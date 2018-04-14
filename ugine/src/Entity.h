@@ -10,6 +10,8 @@ protected:
 	glm::quat _rotation;
 	glm::vec3 _scale;
 
+	std::function<void(float)> _updateCB;
+
 public:
 	Entity();
 	virtual ~Entity() {}
@@ -20,9 +22,10 @@ public:
 	const void			setRotation(const glm::quat& rot);	// puede ser quat
 	const glm::vec3&	getScale() const;
 	void				setScale(const glm::vec3& scale);
+	void				setUpdateCB(const std::function<void(float)> updateFunc);
 
 	void				move(const glm::vec3& vec);	// Ver en las diapositivas
 
-	virtual void		update(float deltaTime) {}
+	virtual void		update(float deltaTime) { if (_updateCB) _updateCB(deltaTime); }
 	virtual void		draw() {}
 };

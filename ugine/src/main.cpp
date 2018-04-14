@@ -155,29 +155,12 @@ std::shared_ptr<World> createWorld(std::shared_ptr<Camera> mainCamera) {
     std::shared_ptr<World> world = std::make_shared<World>();
     world->addEntity(mainCamera);
 
-    std::shared_ptr<Mesh> cubeMesh = std::make_shared<Mesh>();
+	std::cout << "loading asian town... ";
+	std::shared_ptr<Mesh> mesh = Mesh::load("data/asian_town.msh.xml");
+    std::shared_ptr<Model> model = std::make_shared<Model>(mesh);
+	std::cout << "loaded" << std::endl;
 
-    std::shared_ptr<Buffer> cubeFrontBuffer = std::make_shared<Buffer>(cubeFrontVert, sizeof(cubeFrontVert) / sizeof(Vertex),
-                                                                       cubeFrontIdx, sizeof(cubeFrontIdx) / sizeof(GLushort));
-    cubeMesh->addBuffer(cubeFrontBuffer, Material(Texture::load("data/front.png")));
-
-
-    std::shared_ptr<Buffer> cubeTopBuffer = std::make_shared<Buffer>(cubeTopVert, sizeof(cubeTopVert) / sizeof(Vertex),
-                                                                     cubeTopIdx, sizeof(cubeTopIdx) / sizeof(GLushort));
-    cubeMesh->addBuffer(cubeTopBuffer, Material(Texture::load("data/top.png")));
-
-
-    std::shared_ptr<Model> cubeModel = std::make_shared<Model>(cubeMesh);
-    cubeModel->setPosition(glm::vec3());
-    cubeModel->setRotation(glm::quat());
-    cubeModel->setScale(glm::vec3(1.0f, 1.0f, 1.0f));
-	
-	cubeModel->setUpdateCB([cubeModel](float dt) {
-		glm::quat r = glm::rotate(glm::quat(), dt, glm::vec3(0.0f, 1.0f, 0.0f));
-		cubeModel->setRotation(cubeModel->getRotation()*r);
-	});
-	
-    world->addEntity(cubeModel);
+    world->addEntity(model);
 
     return world;
 }
@@ -187,11 +170,16 @@ std::shared_ptr<Camera> createMainCamera(GLFWwindow* window) {
 	glfwGetWindowSize(window, &screenWidth, &screenHeight);
 
     std::shared_ptr<Camera> mainCamera = std::make_shared<Camera>(glm::ivec2(screenWidth, screenHeight));
-    mainCamera->setClearColor(glm::vec3(1.0f, 1.0f, 1.0f));
-    mainCamera->setPosition(glm::vec3(0.0f, 1.0f, 3.0f));
-    glm::quat rot = glm::rotate(glm::quat(), glm::radians(-20.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    mainCamera->setClearColor(glm::vec3(0.0f, 0.5f, 0.8f));
+    mainCamera->setPosition(glm::vec3(0.0f, 10.0f, 3.0f));
+    glm::quat rot = glm::rotate(glm::quat(), glm::radians(-80.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     mainCamera->setRotation(rot);
-    
+
+	mainCamera->setUpdateCB([mainCamera](float dt) {
+		glm::quat r = glm::rotate(glm::quat(), dt, glm::vec3(0.0f, 1.0f, 0.0f));
+		mainCamera->setRotation(mainCamera->getRotation()*r);
+	});
+
     return mainCamera;
 }
 

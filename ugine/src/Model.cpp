@@ -6,20 +6,10 @@
 Model::Model(const std::shared_ptr<Mesh>& mesh) : _mesh(mesh) {}
 
 void Model::draw() {
-
 #define SCALE(m) glm::scale(m, _scale)
 #define ROTATE(m) glm::rotate(m, glm::angle(_rotation), glm::axis(_rotation))
 #define TRANSLATE(m) glm::translate(m, _position)
 
 	State::modelMatrix = SCALE(ROTATE(TRANSLATE(glm::mat4())));
     _mesh->draw();
-}
-
-void Model::update(float deltaTime) {
-	if (_updateCB) {
-		_updateCB(deltaTime);
-	}
-}
-void Model::setUpdateCB(std::function<void(float)> updateFunc) {
-	_updateCB = updateFunc;
 }

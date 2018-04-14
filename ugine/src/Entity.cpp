@@ -33,3 +33,6 @@ void Entity::setScale(const glm::vec3& scale) {
 void Entity::move(const glm::vec3& vec) {
 	_position += _rotation * vec;
 }
+void Entity::setUpdateCB(std::function<void(float)> updateFunc) {
+	_updateCB = updateFunc;
+}
