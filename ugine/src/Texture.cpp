@@ -12,6 +12,7 @@ Texture::~Texture() {
 
 std::shared_ptr<Texture> Texture::load(const char* filename) {
     int width, height;
+    stbi_set_flip_vertically_on_load(true);
     stbi_uc* image = stbi_load(filename, &width, &height, nullptr, 4);
 
     // break if load fails

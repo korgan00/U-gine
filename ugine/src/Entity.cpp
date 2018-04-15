@@ -2,7 +2,7 @@
 #include "Entity.h"
 
 
-Entity::Entity() {
+Entity::Entity() : _scale(1.0f, 1.0f, 1.0f) {
 
 }
 

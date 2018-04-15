@@ -158,6 +158,7 @@ std::shared_ptr<World> createWorld(std::shared_ptr<Camera> mainCamera) {
 	std::cout << "loading asian town... ";
 	std::shared_ptr<Mesh> mesh = Mesh::load("data/asian_town.msh.xml");
     std::shared_ptr<Model> model = std::make_shared<Model>(mesh);
+    model->setScale({ 10.0f, 10.0f, 10.0f });
 	std::cout << "loaded" << std::endl;
 
     world->addEntity(model);
@@ -170,14 +171,45 @@ std::shared_ptr<Camera> createMainCamera(GLFWwindow* window) {
 	glfwGetWindowSize(window, &screenWidth, &screenHeight);
 
     std::shared_ptr<Camera> mainCamera = std::make_shared<Camera>(glm::ivec2(screenWidth, screenHeight));
-    mainCamera->setClearColor(glm::vec3(0.0f, 0.5f, 0.8f));
-    mainCamera->setPosition(glm::vec3(0.0f, 10.0f, 3.0f));
-    glm::quat rot = glm::rotate(glm::quat(), glm::radians(-80.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-    mainCamera->setRotation(rot);
+    mainCamera->setClearColor(glm::vec3(0.2f, 0.6f, 1.0f));
+    mainCamera->setPosition(glm::vec3(0.0f, 0.1f, 0.0f));
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    //glm::quat rot = glm::rotate(glm::quat(), glm::radians(0.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    //mainCamera->setRotation(rot);
 
-	mainCamera->setUpdateCB([mainCamera](float dt) {
-		glm::quat r = glm::rotate(glm::quat(), dt, glm::vec3(0.0f, 1.0f, 0.0f));
-		mainCamera->setRotation(mainCamera->getRotation()*r);
+
+	mainCamera->setUpdateCB([mainCamera, window](float dt) {
+        if (glfwGetKey(window, GLFW_KEY_W)) {
+            mainCamera->move(glm::vec3(0.0f, 0.0f, -1.0f)*dt);
+        }
+        if (glfwGetKey(window, GLFW_KEY_A)) {
+            mainCamera->move(glm::vec3(-1.0f, 0.0f, 0.0f)*dt);
+        }
+        if (glfwGetKey(window, GLFW_KEY_S)) {
+            mainCamera->move(glm::vec3(0.0f, 0.0f, 1.0f)*dt);
+        }
+        if (glfwGetKey(window, GLFW_KEY_D)) {
+            mainCamera->move(glm::vec3(1.0f, 0.0f, 0.0f)*dt);
+        }
+        if (glfwGetKey(window, GLFW_KEY_SPACE)) {
+            mainCamera->move(glm::vec3(0.0f, 1.0f, 0.0f)*dt);
+        }
+        if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) || glfwGetKey(window, GLFW_KEY_RIGHT_CONTROL)) {
+            mainCamera->move(glm::vec3(0.0f, -1.0f, 0.0f)*dt);
+        }
+
+        glm::ivec4 halfVP = mainCamera->getViewport()/2;
+        glm::vec2 viewportCenter = { halfVP.z, halfVP.w };
+
+
+        double xpos = 0, ypos = 0;
+        glfwGetCursorPos(window, &xpos, &ypos);
+        glm::vec2 currMousePos(xpos, ypos );
+        currMousePos = (viewportCenter - currMousePos) / viewportCenter;
+        
+        glm::quat xQuad = glm::rotate(glm::quat(), currMousePos.x, glm::vec3(0.0f, 1.0f, 0.0f));
+        glm::quat yQuad = glm::rotate(glm::quat(), currMousePos.y, glm::vec3(1.0f, 0.0f, 0.0f));
+        mainCamera->setRotation(xQuad * yQuad);
 	});
 
     return mainCamera;
@@ -186,7 +218,7 @@ std::shared_ptr<Camera> createMainCamera(GLFWwindow* window) {
 void updateMainCameraViewport(std::shared_ptr<Camera> mainCamera, GLFWwindow* window) {
     int screenWidth, screenHeight;
     glfwGetWindowSize(window, &screenWidth, &screenHeight);
-    mainCamera->setProjection(glm::perspective(glm::pi<float>()/3.0f, screenWidth / static_cast<float>(screenHeight), 0.1f, 100.0f));
+    mainCamera->setProjection(glm::perspective(glm::pi<float>()/3.0f, screenWidth / static_cast<float>(screenHeight), 0.001f, 100.0f));
     mainCamera->setViewport(glm::ivec4(0, 0, screenWidth, screenHeight));
 
     std::stringstream ss;
