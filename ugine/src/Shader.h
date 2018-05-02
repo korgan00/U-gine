@@ -13,6 +13,7 @@ protected:
 	GLuint _programId;
     GLuint _locVPos;
     GLuint _locUV;
+    GLuint _locNorm;
 
 	GLuint createSubshader(const char* code, GLuint type);
 	void setErrorLength(GLuint length);

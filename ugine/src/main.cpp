@@ -81,56 +81,56 @@ GLushort cubeTopIdx[12] = {
     4, 5, 6, 4, 6, 7
 };
 
-GLint Z_POS[3] = {  0, -3, -6 };
+GLint Z_POS[3] = { 0, -3, -6 };
 GLint X_POS[3] = { -3,  0,  3 };
 
 int main(int, char**) {
-	GLFWwindow* window = initGLFW();
+    GLFWwindow* window = initGLFW();
 
     if (!window) { return -1; }
     if (!init()) { return -1; }
 
     std::shared_ptr<Shader> shader = createBasicShader();
-	if (!shader) { return -1; }
+    if (!shader) { return -1; }
 
     State::defaultShader = shader;
 
     std::shared_ptr<Camera> mainCamera = createMainCamera(window);
     std::shared_ptr<World> world = createWorld(mainCamera);
 
-	float lastTime = static_cast<float>(glfwGetTime());
-	while (!glfwWindowShouldClose(window) && !glfwGetKey(window, GLFW_KEY_ESCAPE)) {
-		// update delta time
-		float newTime = static_cast<float>(glfwGetTime());
-		float deltaTime = newTime - lastTime;
-		lastTime = newTime;
+    float lastTime = static_cast<float>(glfwGetTime());
+    while (!glfwWindowShouldClose(window) && !glfwGetKey(window, GLFW_KEY_ESCAPE)) {
+        // update delta time
+        float newTime = static_cast<float>(glfwGetTime());
+        float deltaTime = newTime - lastTime;
+        lastTime = newTime;
 
         updateMainCameraViewport(mainCamera, window);
 
         world->update(deltaTime);
         world->draw();
 
-		// update swap chain & process events
-		glfwSwapBuffers(window);
-		glfwPollEvents();
-	}
-	
-	return 0;
+        // update swap chain & process events
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    return 0;
 }
 
 bool init() {
-	// init glew
-	if (glewInit()) {
-		std::cout << "could not initialize glew" << std::endl;
-		return false;
-	}
-	initStates();
-	return true;
+    // init glew
+    if (glewInit()) {
+        std::cout << "could not initialize glew" << std::endl;
+        return false;
+    }
+    initStates();
+    return true;
 }
 
 void initStates() {
-	glEnable(GL_SCISSOR_TEST);
-	glEnable(GL_DEPTH_TEST);
+    glEnable(GL_SCISSOR_TEST);
+    glEnable(GL_DEPTH_TEST);
 }
 
 GLFWwindow* initGLFW() {
@@ -155,13 +155,31 @@ std::shared_ptr<World> createWorld(std::shared_ptr<Camera> mainCamera) {
     std::shared_ptr<World> world = std::make_shared<World>();
     world->addEntity(mainCamera);
 
-	std::cout << "loading asian town... ";
-	std::shared_ptr<Mesh> mesh = Mesh::load("data/asian_town.msh.xml");
+    std::cout << "loading bunny... ";
+    std::shared_ptr<Mesh> mesh = Mesh::load("data/bunny.msh.xml");
     std::shared_ptr<Model> model = std::make_shared<Model>(mesh);
-    model->setScale({ 10.0f, 10.0f, 10.0f });
-	std::cout << "loaded" << std::endl;
+    model->setRotation(glm::rotate(glm::quat(), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f)));
+    std::cout << "loaded" << std::endl;
 
     world->addEntity(model);
+
+    world->setAmbient({ 0.2f, 0.2f, 0.2f });
+
+    std::shared_ptr<Light> lightStatic = std::make_shared<Light>();
+    lightStatic->setPosition(glm::vec3(1.0f, 1.0f, 1.0f));
+    /*lightStatic->setUpdateCB([lightStatic](float dt) {
+        lightStatic->setRotation(glm::rotate(lightStatic->getRotation(), glm::radians(dt*30.f), glm::vec3(0.0f, 1.0f, 0.0f)));
+    });*/
+    std::shared_ptr<Light> lightStationary = std::make_shared<Light>();
+    lightStationary->setPosition(glm::vec3(0.0f, 0.0f, 5.0f));
+    lightStationary->setColor(glm::vec3(1.0f, 0.0f, 0.0f));
+    lightStationary->setLinearAttenuation(0.2f);
+    lightStationary->setUpdateCB([lightStationary](float dt){
+        lightStationary->setRotation(glm::rotate(lightStationary->getRotation(), glm::radians(dt*180.f), glm::vec3(0.0f, 1.0f, 0.0f)));
+    });
+
+    world->addEntity(lightStatic);
+    world->addEntity(lightStationary);
 
     return world;
 }
@@ -171,11 +189,11 @@ std::shared_ptr<Camera> createMainCamera(GLFWwindow* window) {
 	glfwGetWindowSize(window, &screenWidth, &screenHeight);
 
     std::shared_ptr<Camera> mainCamera = std::make_shared<Camera>(glm::ivec2(screenWidth, screenHeight));
-    mainCamera->setClearColor(glm::vec3(0.2f, 0.6f, 1.0f));
-    mainCamera->setPosition(glm::vec3(0.0f, 0.1f, 0.0f));
+    mainCamera->setClearColor(glm::vec3(0.0f, 0.0f, 0.0f));
+    mainCamera->setPosition(glm::vec3(0.0f, 0.25f, 0.3f));
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-    //glm::quat rot = glm::rotate(glm::quat(), glm::radians(0.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-    //mainCamera->setRotation(rot);
+    glm::quat rot = glm::rotate(glm::quat(), glm::radians(-30.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    mainCamera->setRotation(rot);
 
 
 	mainCamera->setUpdateCB([mainCamera, window](float dt) {
@@ -194,7 +212,7 @@ std::shared_ptr<Camera> createMainCamera(GLFWwindow* window) {
         if (glfwGetKey(window, GLFW_KEY_SPACE)) {
             mainCamera->move(glm::vec3(0.0f, 1.0f, 0.0f)*dt);
         }
-        if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) || glfwGetKey(window, GLFW_KEY_RIGHT_CONTROL)) {
+        if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL)) {
             mainCamera->move(glm::vec3(0.0f, -1.0f, 0.0f)*dt);
         }
 
@@ -209,7 +227,7 @@ std::shared_ptr<Camera> createMainCamera(GLFWwindow* window) {
         
         glm::quat xQuad = glm::rotate(glm::quat(), currMousePos.x, glm::vec3(0.0f, 1.0f, 0.0f));
         glm::quat yQuad = glm::rotate(glm::quat(), currMousePos.y, glm::vec3(1.0f, 0.0f, 0.0f));
-        mainCamera->setRotation(xQuad * yQuad);
+        //mainCamera->setRotation(xQuad * yQuad);
 	});
 
     return mainCamera;

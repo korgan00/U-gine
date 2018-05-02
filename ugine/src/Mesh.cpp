@@ -54,23 +54,32 @@ vector<T> splitStr(const std::string& str, char delim) {
 	return elems;
 }
 
-vector<Vertex> dataToVertices(vector<float> coords, vector<float> texcoords) {
+vector<Vertex> dataToVertices(vector<float> coords, vector<float> texcoords, vector<float> normals) {
 	vector<Vertex> vertices;
 	auto coordsIt = coords.begin();
-	auto texcoordsIt = texcoords.begin();
-	bool hasTexCoords = texcoords.size() != 0;
+    auto texcoordsIt = texcoords.begin();
+    auto normalsIt = normals.begin();
+    bool hasTexCoords = texcoords.size() != 0;
+    bool hasNormals = normals.size() != 0;
 	while (coordsIt != coords.end()) {
 		float x = *(coordsIt++);
 		float y = *(coordsIt++);
 		float z = *(coordsIt++);
 		glm::vec3 position = {x, y, z};
-		glm::vec2 texCoords;
-		if (hasTexCoords) {
-			float u = *(texcoordsIt++);
-			float v = *(texcoordsIt++);
-			texCoords = {u, v};
-		}
-		vertices.push_back({position, texCoords});
+        glm::vec2 texCoords;
+        if (hasTexCoords) {
+            float u = *(texcoordsIt++);
+            float v = *(texcoordsIt++);
+            texCoords = { u, v };
+        }
+        glm::vec3 normal;
+        if (hasNormals) {
+            float x = *(normalsIt++);
+            float y = *(normalsIt++);
+            float z = *(normalsIt++);
+            normal = { x, y, z };
+        }
+		vertices.push_back({position, texCoords, normal});
 	}
 
 	return vertices;
@@ -84,7 +93,24 @@ inline std::string extractPath(std::string filename) {
 	if (filename.size() > 0) filename += '/';
 	return filename;
 }
+Material nodeToMaterial(pugi::xml_node materialNode, const char* filename, const shared_ptr<Shader>& shader) {
+    using namespace pugi;
+    string textureStr = materialNode.child("texture").text().as_string();
+    textureStr = extractPath(filename) + textureStr;
+    Material m(Texture::load(textureStr.c_str()), shader);
 
+    xml_node colorNode = materialNode.child("color");
+    if (colorNode) {
+        vector<float> colorComponents;
+        colorComponents = splitStr<float>(colorNode.text().as_string(), ',');
+        m.setColor({ colorComponents[0], colorComponents[1], colorComponents[2], 1.0f });
+    }
+    xml_node shininessNode = materialNode.child("shininess");
+    if (shininessNode) {
+        m.setShininess(static_cast<GLubyte>(shininessNode.text().as_uint()));
+    }
+    return m;
+}
 
 shared_ptr<Mesh> Mesh::load(const char* filename, 
 							const shared_ptr<Shader>& shader) {
@@ -98,8 +124,6 @@ shared_ptr<Mesh> Mesh::load(const char* filename,
 		xml_node buffersNode = meshNode.child("buffers");
 
 		for (xml_node bufferNode = buffersNode.child("buffer"); bufferNode; bufferNode = bufferNode.next_sibling("buffer")) {
-			xml_node materialNode = bufferNode.child("material");
-			string textureStr = materialNode.child("texture").text().as_string();
 			vector<float> coords = splitStr<float>(bufferNode.child("coords").text().as_string(), ',');
 			vector<GLushort> indices = splitStr<GLushort>(bufferNode.child("indices").text().as_string(), ',');
 			xml_node texcoordsNode = bufferNode.child("texcoords");
@@ -107,13 +131,17 @@ shared_ptr<Mesh> Mesh::load(const char* filename,
 			if (texcoordsNode) {
 				texcoords = splitStr<float>(texcoordsNode.text().as_string(), ',');
 			}
-			vector<Vertex> vertices = dataToVertices(coords, texcoords);
+            xml_node normalsNode = bufferNode.child("normals");
+            vector<float> normals;
+            if (normalsNode) {
+                normals = splitStr<float>(normalsNode.text().as_string(), ',');
+            }
+			vector<Vertex> vertices = dataToVertices(coords, texcoords, normals);
 
 			shared_ptr<Buffer> buffer = make_shared<Buffer>(vertices.data(), vertices.size(), 
 															indices.data(), indices.size());
 			
-			textureStr = extractPath(filename) + textureStr;
-			mesh->addBuffer(buffer, Material(Texture::load(textureStr.c_str()), shader));
+			mesh->addBuffer(buffer, nodeToMaterial(bufferNode.child("material"), filename, shader));
 		}
 		return mesh;
 	}

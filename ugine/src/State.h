@@ -1,8 +1,10 @@
 #pragma once
 
 #include "common.h"
-#include <memory>
 #include "Shader.h"
+#include "Light.h"
+#include <memory>
+#include <vector>
 
 class State {
 protected:
@@ -13,4 +15,8 @@ public:
 	static glm::mat4 				projectionMatrix;
 	static glm::mat4 				viewMatrix;
 	static glm::mat4 				modelMatrix;
+
+
+    static std::vector<std::shared_ptr<Light>>	lights;
+    static glm::vec3						    ambient;
 };

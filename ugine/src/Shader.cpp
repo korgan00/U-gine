@@ -50,7 +50,8 @@ Shader::Shader(const char* vsCode, const char* fsCode) : _programId(0) {
 	}
 	CHECK_ERR;
     _locVPos = glGetAttribLocation(_programId, "vpos");
-    _locUV = glGetAttribLocation(_programId, "v_uv");
+    _locUV = glGetAttribLocation(_programId, "vuv");
+    _locNorm = glGetAttribLocation(_programId, "vnormal");
 }
 
 GLuint Shader::createSubshader(const char* code, GLuint type) {
@@ -109,6 +110,8 @@ void Shader::setupAttribs() const {
     glVertexAttribPointer(_locVPos, 3, GL_FLOAT, false, sizeof(Vertex), reinterpret_cast<void*>(offsetof(Vertex, position)));
     glEnableVertexAttribArray(_locUV);
     glVertexAttribPointer(_locUV, 2, GL_FLOAT, false, sizeof(Vertex), reinterpret_cast<void*>(offsetof(Vertex, texCoords)));
+    glEnableVertexAttribArray(_locNorm);
+    glVertexAttribPointer(_locNorm, 3, GL_FLOAT, false, sizeof(Vertex), reinterpret_cast<void*>(offsetof(Vertex, normal)));
 }
 
 // Obtiene la localización de una variable uniform
