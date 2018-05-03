@@ -10,7 +10,6 @@ varying vec2 f_uv;
 varying vec3 f_normal;
 varying vec4 f_mvpos;
 
-
 uniform bool isTexturized;
 uniform sampler2D tex;
 uniform vec4 color;
@@ -41,17 +40,15 @@ void main() {
 			atten = 1.0 / (1.0 + currLight.linearAttenuation * length(LtoPos));
 		}
 		
-		angle = dot(N, normalize(L).xyz);
+		L = normalize(L);
+		angle = dot(N, L);
 		diffuseContrib += max(angle, 0.0) * currLight.color * atten;
 		
-
 		if (shininess > 0 && angle > 0.0) {
-			H = normalize(normalize(L) - normalize(f_mvpos));
+			H = normalize(L - normalize(f_mvpos));
 			NdotH = clamp(dot(N,H.xyz), 0.0, 1.0);
-			specularContribFactor += pow(NdotH, shininess)* atten;
+			specularContribFactor += pow(NdotH, shininess) * atten;
 		}
-		
-
 	}
 	
 	vec4 finalColor = vec4(1.0, 1.0, 1.0, 1.0);
