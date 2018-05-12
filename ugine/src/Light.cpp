@@ -26,25 +26,13 @@ void Light::setLinearAttenuation(float att) {
 }
 
 
-void Light::prepare(int index, std::shared_ptr<Shader>& shader) const {
+void Light::prepare(LightAttribsLocation locations, std::shared_ptr<Shader>& shader) const {
 
 #define SCALE(m) glm::scale(m, _scale)
 #define ROTATE(m) glm::rotate(m, glm::angle(_rotation), glm::axis(_rotation))
 #define TRANSLATE(m) glm::translate(m, _position)
 
-    std::stringstream ss;
-    ss << "lights[" << index << "].color";
-    GLint colorLoc = shader->getLocation(ss.str().c_str());
-    shader->setVec3(colorLoc, _color);
-    
-    ss.str("");
-    ss << "lights[" << index << "].vector";
-    GLint vectorLoc = shader->getLocation(ss.str().c_str());
-    shader->setVec4(vectorLoc, State::viewMatrix * SCALE(ROTATE(TRANSLATE(glm::mat4()))) * glm::vec4(1, 1, 1, _type));
-
-    ss.str("");
-    ss << "lights[" << index << "].linearAttenuation";
-    GLint attenLoc = shader->getLocation(ss.str().c_str());
-    shader->setFloat(attenLoc, _linearAttenuation);
-    
+    shader->setVec3(locations._locColor, _color);
+    shader->setVec4(locations._locVector, State::viewMatrix * SCALE(ROTATE(TRANSLATE(glm::mat4()))) * glm::vec4(1, 1, 1, _type));
+    shader->setFloat(locations._locLinearAttenuation, _linearAttenuation);
 }

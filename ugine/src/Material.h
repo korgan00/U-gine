@@ -3,6 +3,7 @@
 #include <memory>
 #include "Texture.h"
 #include "Shader.h"
+#include "LightAttribsLocation.h"
 
 class Material {
 private:
@@ -21,6 +22,8 @@ private:
     GLint _locShininess;
     GLint _locNumLights;
     GLint _locAmbient;
+
+	LightAttribsLocation _locLightAttribs[8];
 
 public:
     Material(const std::shared_ptr<Texture>& tex = nullptr,

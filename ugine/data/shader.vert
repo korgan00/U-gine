@@ -12,6 +12,6 @@ varying vec4 f_mvpos;
 void main() {
 	gl_Position = mvp * vec4(vpos, 1);
 	f_uv = vuv;
-	f_normal = normalize((normalMat * vec4(vnormal, 1.0)).xyz);
+	f_normal = (normalMat * vec4(vnormal, 1.0)).xyz;
 	f_mvpos = mv * vec4(vpos, 1);
 }

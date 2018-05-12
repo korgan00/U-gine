@@ -175,7 +175,7 @@ std::shared_ptr<World> createWorld(std::shared_ptr<Camera> mainCamera) {
     lightStationary->setColor(glm::vec3(1.0f, 0.0f, 0.0f));
     lightStationary->setLinearAttenuation(0.2f);
     lightStationary->setUpdateCB([lightStationary](float dt){
-        lightStationary->setRotation(glm::rotate(lightStationary->getRotation(), glm::radians(dt*90.f), glm::vec3(0.0f, 1.0f, 0.0f)));
+        lightStationary->setRotation(glm::rotate(lightStationary->getRotation(), glm::radians(dt*90.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
     });
 
     world->addEntity(lightStatic);

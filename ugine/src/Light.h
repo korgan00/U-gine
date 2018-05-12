@@ -2,6 +2,7 @@
 
 #include "Entity.h"
 #include "Shader.h"
+#include "LightAttribsLocation.h"
 
 enum Type {
     DIRECTIONAL = 0,
@@ -26,5 +27,5 @@ public:
     void			setColor(const glm::vec3& color);
     float			getLinearAttenuation() const;
     void			setLinearAttenuation(float att);
-    void			prepare(int index, std::shared_ptr<Shader>& shader) const;
+    void			prepare(LightAttribsLocation locations, std::shared_ptr<Shader>& shader) const;
 };

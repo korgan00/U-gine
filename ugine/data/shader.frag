@@ -25,7 +25,7 @@ void main() {
 	float specularContribFactor = 0.0;
 
 	Light currLight;
-	vec3 N = f_normal, H;
+	vec3 N = normalize(f_normal), H;
 	vec3 L, LtoPos;
 	float atten, angle, NdotH;
 	

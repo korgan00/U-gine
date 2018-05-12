@@ -24,6 +24,22 @@ void Material::setShader(const std::shared_ptr<Shader>& shader) {
     _locShininess = getShader()->getLocation("shininess");
     _locAmbient = getShader()->getLocation("ambient");
     _locNumLights = getShader()->getLocation("numLights");
+
+	// get light properties location
+	std::stringstream ss;
+	for (int i = 0; i < 8; i++) {
+		ss.str("");
+		ss << "lights[" << i << "].color";
+		_locLightAttribs[i]._locColor = getShader()->getLocation(ss.str().c_str());
+
+		ss.str("");
+		ss << "lights[" << i << "].vector";
+		_locLightAttribs[i]._locVector = getShader()->getLocation(ss.str().c_str());
+
+		ss.str("");
+		ss << "lights[" << i << "].linearAttenuation";
+		_locLightAttribs[i]._locLinearAttenuation = getShader()->getLocation(ss.str().c_str());
+	}
 }
 const std::shared_ptr<Texture>& Material::getTexture() const {
     return _tex;
@@ -66,6 +82,6 @@ void Material::prepare() {
     }
     
     for (int i = 0; i < State::lights.size(); ++i) {
-        State::lights[i]->prepare(i, s);
+        State::lights[i]->prepare(_locLightAttribs[i], s);
     }
 }

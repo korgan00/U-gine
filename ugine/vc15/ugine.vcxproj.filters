@@ -116,6 +116,9 @@
     <ClInclude Include="..\src\Light.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\LightAttribsLocation.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\data\shader.frag">

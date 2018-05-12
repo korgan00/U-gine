@@ -158,6 +158,7 @@
     <ClInclude Include="..\src\common.h" />
     <ClInclude Include="..\src\Entity.h" />
     <ClInclude Include="..\src\Light.h" />
+    <ClInclude Include="..\src\LightAttribsLocation.h" />
     <ClInclude Include="..\src\Material.h" />
     <ClInclude Include="..\src\Mesh.h" />
     <ClInclude Include="..\src\Model.h" />
