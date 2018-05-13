@@ -4,6 +4,7 @@
 #include "Texture.h"
 #include "Shader.h"
 #include "LightAttribsLocation.h"
+#include "BlendMode.h"
 
 class Material {
 private:
@@ -12,6 +13,11 @@ private:
 
     glm::vec4 _color;
     GLubyte _shininess;
+
+    BlendMode _blendMode;
+    bool _lighting;
+    bool _culling;
+    bool _depthWrite;
 
     GLint _locMVP;
     GLint _locMV;
@@ -24,6 +30,9 @@ private:
     GLint _locAmbient;
 
 	LightAttribsLocation _locLightAttribs[8];
+
+    void prepareShaderAttributes();
+    void prepareGlStates();
 
 public:
     Material(const std::shared_ptr<Texture>& tex = nullptr,
@@ -42,6 +51,18 @@ public:
 
     GLubyte getShininess() const;
     void setShininess(GLubyte shininess);
+
+    BlendMode	getBlendMode() const;
+    void		setBlendMode(BlendMode blendMode);
+
+    bool		getLighting() const;
+    void		setLighting(bool enable);
+
+    bool		getCulling() const;
+    void		setCulling(bool enable);
+
+    bool		getDepthWrite() const;
+    void		setDepthWrite(bool enable);
 
     void prepare();
 

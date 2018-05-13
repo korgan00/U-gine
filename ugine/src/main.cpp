@@ -78,6 +78,7 @@ bool init() {
 void initStates() {
     glEnable(GL_SCISSOR_TEST);
     glEnable(GL_DEPTH_TEST);
+    glEnable(GL_BLEND);
 }
 
 GLFWwindow* initGLFW() {

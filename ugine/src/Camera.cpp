@@ -31,6 +31,7 @@ void Camera::prepare() {
 #define TRANSLATE(m) glm::translate(m, -_position)
 
 	State::viewMatrix = TRANSLATE(ROTATE(glm::mat4()));
+    glDepthMask(true);
 	glViewport(_viewport.x, _viewport.y, _viewport.z, _viewport.w);
 	glScissor(_viewport.x, _viewport.y, _viewport.z, _viewport.w);
 	glClearColor(_clrColor.r, _clrColor.g, _clrColor.b, 1);

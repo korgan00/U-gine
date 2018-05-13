@@ -62,10 +62,37 @@ void Material::setShininess(GLubyte shininess) {
     _shininess = shininess;
 }
 
-void Material::prepare() {
+BlendMode Material::getBlendMode() const {
+    return _blendMode;
+}
+void Material::setBlendMode(BlendMode blendMode) {
+    _blendMode = blendMode;
+}
+
+bool Material::getLighting() const {
+    return _lighting;
+}
+void Material::setLighting(bool enable) {
+    _lighting = enable;
+}
+
+bool Material::getCulling() const {
+    return _culling;
+}
+void Material::setCulling(bool enable) {
+    _culling = enable;
+}
+
+bool Material::getDepthWrite() const {
+    return _depthWrite;
+}
+void Material::setDepthWrite(bool enable) {
+    _depthWrite = enable;
+}
+
+void Material::prepareShaderAttributes() {
     glm::mat4 mv = State::viewMatrix * State::modelMatrix;
     std::shared_ptr<Shader> s = getShader();
-    int numLights = State::lights.size();
     s->use();
     s->setMatrix(_locMVP, State::projectionMatrix * mv);
     s->setMatrix(_locMV, mv);
@@ -75,13 +102,40 @@ void Material::prepare() {
     s->setVec4(_locColor, _color);
     s->setInt(_locShininess, _shininess);
     s->setVec3(_locAmbient, State::ambient);
-    s->setInt(_locNumLights, numLights);
+    s->setInt(_locNumLights, _lighting ? State::lights.size() : 0);
+}
+
+void Material::prepareGlStates() {
+    if (_blendMode == BlendMode::ALPHA) {
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    } else if (_blendMode == BlendMode::ADD) {
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+    } else if (_blendMode == BlendMode::MUL) {
+        glBlendFunc(GL_ZERO, GL_SRC_COLOR);
+    }
+
+    if (_culling) {
+        glEnable(GL_CULL_FACE);
+    } else {
+        glDisable(GL_CULL_FACE);
+    }
+
+    glDepthMask(_depthWrite ? GL_TRUE : GL_FALSE);
+}
+
+void Material::prepare() {
+    
+    prepareShaderAttributes();
+
+    prepareGlStates();
 
     if (_tex) {
         _tex->bind();
     }
-    
-    for (int i = 0; i < State::lights.size(); ++i) {
-        State::lights[i]->prepare(_locLightAttribs[i], s);
+
+    if (_lighting) {
+        for (int i = 0; i < State::lights.size(); ++i) {
+            State::lights[i]->prepare(_locLightAttribs[i], getShader());
+        }
     }
 }
