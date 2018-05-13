@@ -31,59 +31,6 @@ std::shared_ptr<Camera> createMainCamera(GLFWwindow* window);
 std::shared_ptr<Shader> createBasicShader();
 void updateMainCameraViewport(std::shared_ptr<Camera> mainCamera, GLFWwindow* window);
 
-Vertex triangleVert[3] = { { glm::vec3( 0.0f,  1.0f, 0.0f), glm::vec2(0.0f, 1.0f) },
-                           { glm::vec3(-1.0f, -1.0f, 0.0f), glm::vec2(0.0f, 1.0f) },
-                           { glm::vec3( 1.0f, -1.0f, 0.0f), glm::vec2(0.0f, 1.0f) }
-						 };
-
-Vertex cubeFrontVert[16] = {
-    { glm::vec3(-0.5f,  0.5f, 0.5f), glm::vec2(0.0f, 1.0f) },
-    { glm::vec3(-0.5f, -0.5f, 0.5f), glm::vec2(0.0f, 0.0f) },
-    { glm::vec3( 0.5f, -0.5f, 0.5f), glm::vec2(1.0f, 0.0f) },
-    { glm::vec3( 0.5f,  0.5f, 0.5f), glm::vec2(1.0f, 1.0f) },
-
-    { glm::vec3(-0.5f,  0.5f, -0.5f), glm::vec2(1.0f, 1.0f) },
-    { glm::vec3(-0.5f, -0.5f, -0.5f), glm::vec2(1.0f, 0.0f) },
-    { glm::vec3( 0.5f, -0.5f, -0.5f), glm::vec2(0.0f, 0.0f) },
-    { glm::vec3( 0.5f,  0.5f, -0.5f), glm::vec2(0.0f, 1.0f) },
-
-    { glm::vec3( 0.5f,  0.5f,  0.5f), glm::vec2(0.0f, 1.0f) },
-    { glm::vec3( 0.5f, -0.5f,  0.5f), glm::vec2(0.0f, 0.0f) },
-    { glm::vec3( 0.5f, -0.5f, -0.5f), glm::vec2(1.0f, 0.0f) },
-    { glm::vec3( 0.5f,  0.5f, -0.5f), glm::vec2(1.0f, 1.0f) },
-
-    { glm::vec3(-0.5f,  0.5f, -0.5f), glm::vec2(0.0f, 1.0f) },
-    { glm::vec3(-0.5f, -0.5f, -0.5f), glm::vec2(0.0f, 0.0f) },
-    { glm::vec3(-0.5f, -0.5f,  0.5f), glm::vec2(1.0f, 0.0f) },
-    { glm::vec3(-0.5f,  0.5f,  0.5f), glm::vec2(1.0f, 1.0f) }
-};
-Vertex cubeTopVert[8] = {
-    { glm::vec3(-0.5f,  0.5f, -0.5f), glm::vec2(0.0f, 1.0f) },
-    { glm::vec3(-0.5f,  0.5f,  0.5f), glm::vec2(0.0f, 0.0f) },
-    { glm::vec3( 0.5f,  0.5f,  0.5f), glm::vec2(1.0f, 0.0f) },
-    { glm::vec3( 0.5f,  0.5f, -0.5f), glm::vec2(1.0f, 1.0f) },
-
-    { glm::vec3(-0.5f, -0.5f,  0.5f), glm::vec2(0.0f, 1.0f) },
-    { glm::vec3(-0.5f, -0.5f, -0.5f), glm::vec2(0.0f, 0.0f) },
-    { glm::vec3( 0.5f, -0.5f, -0.5f), glm::vec2(1.0f, 0.0f) },
-    { glm::vec3( 0.5f, -0.5f,  0.5f), glm::vec2(1.0f, 1.0f) },
-};
-
-GLushort triangleIdx[6] = { 0, 1, 2 };
-GLushort cubeFrontIdx[24] = {
-     0,  1,  2,  0,  2,  3,
-     7,  6,  5,  7,  5,  4,
-     8,  9, 10,  8, 10, 11,
-    12, 13, 14, 12, 14, 15
-};
-GLushort cubeTopIdx[12] = {
-    0, 1, 2, 0, 2, 3,
-    4, 5, 6, 4, 6, 7
-};
-
-GLint Z_POS[3] = { 0, -3, -6 };
-GLint X_POS[3] = { -3,  0,  3 };
-
 int main(int, char**) {
     GLFWwindow* window = initGLFW();
 

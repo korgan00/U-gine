@@ -36,7 +36,7 @@ void main() {
 		L = currLight.vector.xyz;
 		
 		if (currLight.vector.w == 1.0) {
-			LtoPos = L - f_mvpos;
+			L = L - f_mvpos;
 			atten = 1.0 / (1.0 + currLight.linearAttenuation * length(LtoPos));
 		}
 		
