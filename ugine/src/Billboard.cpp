@@ -13,7 +13,7 @@ GLushort quadIdx[6] = {
 };
 
 Billboard::Billboard(const Material& mat) : _material(mat), _size(1, 1), _spin(0) {
-	_buffer = std::make_shared<Buffer>(&quadVert, 4, &quadIdx, 6);
+	_buffer = std::make_shared<Buffer>(quadVert, 4, quadIdx, 6);
 
 	if (mat.getTexture()) {
 		_size = mat.getTexture()->getSize();
@@ -46,7 +46,9 @@ void Billboard::draw() {
 	model[0][3] = 0;
 	model[1][3] = 0;
 	model[2][3] = 0;
-	model[3] = glm::vec4(getPosition(), 1.0f);
+
+	glm::vec3 p = getPosition();
+	model[3] = glm::vec4(p.x, p.y, p.z, 1.0f);
 
 	model = glm::rotate(model, glm::radians(_spin), glm::vec3(0.0f, 0.0f, 1.0f));
 	model = glm::scale(model, glm::vec3(_size, 1.0f));

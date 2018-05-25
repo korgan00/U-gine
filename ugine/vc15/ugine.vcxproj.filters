@@ -63,6 +63,12 @@
     <ClCompile Include="..\src\Billboard.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\Particle.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Emitter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\lib\glew\glew.h">
@@ -126,6 +132,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\Billboard.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Particle.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Emitter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

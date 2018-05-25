@@ -3,7 +3,9 @@
 
 
 Material::Material( const std::shared_ptr<Texture>& tex,
-                    const std::shared_ptr<Shader>& shader) : _tex(tex), _color(1.0f, 1.0f, 1.0f, 1.0f) {
+                    const std::shared_ptr<Shader>& shader) 
+	: _tex(tex), _color(1.0f, 1.0f, 1.0f, 1.0f), _lighting(true), 
+	_culling(true), _depthWrite(true), _blendMode(ALPHA) {
     setShader(shader);
 }
 
