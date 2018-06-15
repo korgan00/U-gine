@@ -1,9 +1,10 @@
 
 #include "Entity.h"
 
+unsigned int Entity::currendId = 0;
 
 Entity::Entity() : _scale(1.0f, 1.0f, 1.0f) {
-
+    _id = Entity::currendId++;
 }
 
 const glm::vec3& Entity::getPosition() const {

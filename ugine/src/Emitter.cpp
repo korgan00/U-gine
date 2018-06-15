@@ -1,5 +1,6 @@
 #include "Emitter.h"
 #include <algorithm>
+#include <iostream>
 
 
 Emitter::Emitter(const Material& mat, bool autofade) 
@@ -41,29 +42,31 @@ void Emitter::update(float deltaTime) {
 		float particlesToEmit = glm::linearRand(_rateRange.first, _rateRange.second) * deltaTime + _emittedRest;
 		_emittedRest = particlesToEmit - (int)particlesToEmit;
 
+        std::cout << particlesToEmit << "   " << _emittedRest << std::endl;
+
 		for (int i = 0; i < particlesToEmit; i++) {
 			_material.setColor(glm::linearRand(_colorRange.first, _colorRange.second));
-			_emittedParticles.push_back(
-				Particle(_material,
-					glm::linearRand(_velocityRange.first, _velocityRange.second),
-					glm::linearRand(_spinVelocityRange.first, _spinVelocityRange.second),
-					glm::linearRand(_lifetimeRange.first, _lifetimeRange.second),
-					_autofade)
-			);
-			_emittedParticles.back().setSize(_emittedParticles.back().getSize() * glm::linearRand(_scaleRange.first, _scaleRange.second));
+            std::shared_ptr<Particle> p = std::make_shared<Particle>(_material,
+                glm::linearRand(_velocityRange.first, _velocityRange.second),
+                glm::linearRand(_spinVelocityRange.first, _spinVelocityRange.second),
+                glm::linearRand(_lifetimeRange.first, _lifetimeRange.second),
+                _autofade);
+            p->setSize(p->getSize() * 0.5f * glm::linearRand(_scaleRange.first, _scaleRange.second));
+            p->setPosition(_position);
+			_emittedParticles.push_back(p);
 		}
 	}
 
-	for (Particle p : _emittedParticles) {
-		p.update(deltaTime);
+	for (std::shared_ptr<Particle> p : _emittedParticles) {
+		p->update(deltaTime);
 	}
 
-	auto itEnd = std::remove_if(_emittedParticles.begin(), _emittedParticles.end(), [](Particle p) { return p.getRemainingLifetime() <= 0; });
+	auto itEnd = std::remove_if(_emittedParticles.begin(), _emittedParticles.end(), [](std::shared_ptr<Particle> p) { return p->getRemainingLifetime() <= 0; });
 	_emittedParticles.erase(itEnd, _emittedParticles.end());
 }
 
 void Emitter::draw() {
-	for (Particle p : _emittedParticles) {
-		p.draw();
+    for (std::shared_ptr<Particle> p : _emittedParticles) {
+		p->draw();
 	}
 }

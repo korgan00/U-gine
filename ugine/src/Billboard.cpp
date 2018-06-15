@@ -47,8 +47,7 @@ void Billboard::draw() {
 	model[1][3] = 0;
 	model[2][3] = 0;
 
-	glm::vec3 p = getPosition();
-	model[3] = glm::vec4(p.x, p.y, p.z, 1.0f);
+	model[3] = glm::vec4(_position.x, _position.y, _position.z, 1.0f);
 
 	model = glm::rotate(model, glm::radians(_spin), glm::vec3(0.0f, 0.0f, 1.0f));
 	model = glm::scale(model, glm::vec3(_size, 1.0f));

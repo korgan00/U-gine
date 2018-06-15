@@ -19,7 +19,7 @@ private:
 	std::pair<float, float> _lifetimeRange;
 	std::pair<glm::vec4, glm::vec4> _colorRange;
 
-	std::vector<Particle> _emittedParticles;
+	std::vector<std::shared_ptr<Particle>> _emittedParticles;
 	float _emittedRest;
 
 public: 

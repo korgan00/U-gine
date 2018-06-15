@@ -21,7 +21,7 @@ uniform int shininess;
 
 void main() {
 
-	vec3 diffuseContrib = numLights > 0? ambient: vec3(0, 0, 0);
+	vec3 diffuseContrib = numLights > 0? ambient: vec3(1.0, 1.0, 1.0);
 	float specularContribFactor = 0.0;
 
 	Light currLight;

@@ -130,16 +130,18 @@ std::shared_ptr<World> createWorld(std::shared_ptr<Camera> mainCamera) {
 	smokeEmitter->setLifetimeRange(1.0f, 5.0f);
 	smokeEmitter->setVelocityRange(glm::vec3(-0.1f, 1.0f, -0.1f), glm::vec3(0.1f, 4.0f, 0.1f));
 	smokeEmitter->setSpinVelocityRange(glm::radians(30.0f), glm::radians(60.0f));
-	smokeEmitter->setScaleRange(0.05f, 0.1f);
+    smokeEmitter->setScaleRange(0.05f, 0.1f);
+    smokeEmitter->setColorRange(glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
 	smokeEmitter->emit(true);
 
 	std::shared_ptr<Emitter> flameEmitter = std::make_shared<Emitter>(particleMaterial("data/flame.png", BlendMode::ADD), false);
 	flameEmitter->setPosition(glm::vec3(0.0f, 6.5f, 0.0f));
 	flameEmitter->setRateRange(10.0f, 25.0f);
 	flameEmitter->setLifetimeRange(0.5f, 0.5f);
-	flameEmitter->setVelocityRange(glm::vec3(-1.0f, 5.0f, -1.0f), glm::vec3(1.0f, 10, 1.0f));
+	flameEmitter->setVelocityRange(glm::vec3(-1.0f, 5.0f, -1.0f), glm::vec3(1.0f, 10.0f, 1.0f));
 	flameEmitter->setSpinVelocityRange(glm::radians(0.0f), glm::radians(0.0f));
 	flameEmitter->setScaleRange(0.025f, 0.1f);
+    flameEmitter->setColorRange(glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
 	flameEmitter->emit(true);
 
 	world->addEntity(smokeEmitter);
@@ -162,13 +164,21 @@ std::shared_ptr<Camera> createMainCamera(GLFWwindow* window) {
 	glfwGetWindowSize(window, &screenWidth, &screenHeight);
 
     std::shared_ptr<Camera> mainCamera = std::make_shared<Camera>(glm::ivec2(screenWidth, screenHeight));
-    mainCamera->setClearColor(glm::vec3(0.3f, 0.4f, 0.7f));
-    mainCamera->setPosition(glm::vec3(0.0f, 12.0f, 8.0f));
+    mainCamera->setClearColor(glm::vec3(0.0f, 0.0f, 0.0f));
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-    glm::quat rot = glm::rotate(glm::quat(), glm::radians(-40.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-    mainCamera->setRotation(rot);
-
 	
+    std::shared_ptr<float> accumDt = std::make_shared<float>(0.0f);
+
+    mainCamera->setUpdateCB([mainCamera, window, accumDt](float dt) {
+        mainCamera->setPosition(glm::vec3(0.0f, 5.0f, 0.0f));
+        *accumDt += dt;
+        glm::quat rot = glm::rotate(glm::quat(), glm::radians(*accumDt * 25), glm::vec3(0.0f, 1.0f, 0.0f));
+        rot = glm::rotate(rot, glm::radians(-30.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+        mainCamera->setRotation(rot);
+        mainCamera->move(glm::vec3(0.0f, 0.0f, 25.0f));
+    });
+
+    /*
 	mainCamera->setUpdateCB([mainCamera, window](float dt) {
         if (glfwGetKey(window, GLFW_KEY_W)) {
             mainCamera->move(glm::vec3(0.0f, 0.0f, -1.0f)*dt);
@@ -194,14 +204,14 @@ std::shared_ptr<Camera> createMainCamera(GLFWwindow* window) {
 
         double xpos = 0, ypos = 0;
         glfwGetCursorPos(window, &xpos, &ypos);
-        glm::vec2 currMousePos(xpos, ypos );
+        glm::vec2 currMousePos(xpos, ypos);
         currMousePos = (viewportCenter - currMousePos) / viewportCenter;
         
         glm::quat xQuad = glm::rotate(glm::quat(), currMousePos.x, glm::vec3(0.0f, 1.0f, 0.0f));
         glm::quat yQuad = glm::rotate(glm::quat(), currMousePos.y, glm::vec3(1.0f, 0.0f, 0.0f));
         //mainCamera->setRotation(xQuad * yQuad);
 	});
-	
+	*/
     return mainCamera;
 }
 

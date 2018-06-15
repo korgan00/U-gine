@@ -5,6 +5,8 @@
 
 class Entity {
 protected:
+    static unsigned int currendId;
+    unsigned int _id;
 
 	glm::vec3 _position;
 	glm::quat _rotation;
