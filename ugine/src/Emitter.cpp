@@ -1,6 +1,5 @@
 #include "Emitter.h"
 #include <algorithm>
-#include <iostream>
 
 
 Emitter::Emitter(const Material& mat, bool autofade) 
@@ -41,8 +40,6 @@ void Emitter::update(float deltaTime) {
 	if (_isEmitting) {
 		float particlesToEmit = glm::linearRand(_rateRange.first, _rateRange.second) * deltaTime + _emittedRest;
 		_emittedRest = particlesToEmit - (int)particlesToEmit;
-
-        std::cout << particlesToEmit << "   " << _emittedRest << std::endl;
 
 		for (int i = 0; i < particlesToEmit; i++) {
 			_material.setColor(glm::linearRand(_colorRange.first, _colorRange.second));
