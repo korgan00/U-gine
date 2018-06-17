@@ -52,6 +52,7 @@ Shader::Shader(const char* vsCode, const char* fsCode) : _programId(0) {
     _locVPos = glGetAttribLocation(_programId, "vpos");
     _locUV = glGetAttribLocation(_programId, "vuv");
     _locNorm = glGetAttribLocation(_programId, "vnormal");
+    _locTan = glGetAttribLocation(_programId, "vtangent");
 }
 
 GLuint Shader::createSubshader(const char* code, GLuint type) {
@@ -112,6 +113,8 @@ void Shader::setupAttribs() const {
     glVertexAttribPointer(_locUV, 2, GL_FLOAT, false, sizeof(Vertex), reinterpret_cast<void*>(offsetof(Vertex, texCoords)));
     glEnableVertexAttribArray(_locNorm);
     glVertexAttribPointer(_locNorm, 3, GL_FLOAT, false, sizeof(Vertex), reinterpret_cast<void*>(offsetof(Vertex, normal)));
+    glEnableVertexAttribArray(_locTan);
+    glVertexAttribPointer(_locTan, 3, GL_FLOAT, false, sizeof(Vertex), reinterpret_cast<void*>(offsetof(Vertex, tangent)));
 }
 
 // Obtiene la localización de una variable uniform

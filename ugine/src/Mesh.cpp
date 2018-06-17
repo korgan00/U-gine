@@ -54,24 +54,31 @@ vector<T> splitStr(const std::string& str, char delim) {
 	return elems;
 }
 
-vector<Vertex> dataToVertices(vector<float> coords, vector<float> texcoords, vector<float> normals) {
+vector<Vertex> dataToVertices(vector<float> coords, vector<float> texcoords, vector<float> normals, vector<float> tangents) {
 	vector<Vertex> vertices;
+
 	auto coordsIt = coords.begin();
     auto texcoordsIt = texcoords.begin();
     auto normalsIt = normals.begin();
+    auto tangentsIt = tangents.begin();
+
     bool hasTexCoords = texcoords.size() != 0;
     bool hasNormals = normals.size() != 0;
+    bool hasTangents = tangents.size() != 0;
+
 	while (coordsIt != coords.end()) {
 		float x = *(coordsIt++);
 		float y = *(coordsIt++);
 		float z = *(coordsIt++);
 		glm::vec3 position = {x, y, z};
+
         glm::vec2 texCoords;
         if (hasTexCoords) {
             float u = *(texcoordsIt++);
             float v = *(texcoordsIt++);
             texCoords = { u, v };
         }
+
         glm::vec3 normal;
         if (hasNormals) {
             float x = *(normalsIt++);
@@ -79,7 +86,15 @@ vector<Vertex> dataToVertices(vector<float> coords, vector<float> texcoords, vec
             float z = *(normalsIt++);
             normal = { x, y, z };
         }
-		vertices.push_back({position, texCoords, normal});
+
+        glm::vec3 tangent;
+        if (hasTangents) {
+            float x = *(tangentsIt++);
+            float y = *(tangentsIt++);
+            float z = *(tangentsIt++);
+            tangent = { x, y, z };
+        }
+		vertices.push_back({position, texCoords, normal, tangent});
 	}
 
 	return vertices;
@@ -93,21 +108,64 @@ inline std::string extractPath(std::string filename) {
 	if (filename.size() > 0) filename += '/';
 	return filename;
 }
+
+std::shared_ptr<Texture> textureFromNode(pugi::xml_node textureNode, const string& path) {
+    using namespace pugi;
+    string textureStr = textureNode.text().as_string();
+    vector<string> textureList;
+    textureList = splitStr<string>(textureStr, ',');
+    std::shared_ptr<Texture> texture;
+    if (textureList.size() == 1) {
+        texture = Texture::load((path + textureList[0]).c_str());
+    } else if (textureList.size() == 6) {
+        texture = Texture::load((path + textureList[0]).c_str(), (path + textureList[1]).c_str(),
+                                (path + textureList[2]).c_str(), (path + textureList[3]).c_str(),
+                                (path + textureList[4]).c_str(), (path + textureList[5]).c_str());
+    }
+    return texture;
+}
+
 Material nodeToMaterial(pugi::xml_node materialNode, const char* filename, const shared_ptr<Shader>& shader) {
     using namespace pugi;
-    string textureStr = materialNode.child("texture").text().as_string();
-    textureStr = extractPath(filename) + textureStr;
-    Material m(Texture::load(textureStr.c_str()), shader);
+    string path = extractPath(filename);
+
+    Material m(textureFromNode(materialNode.child("texture"), path), shader);
+    m.setNormalTexture(textureFromNode(materialNode.child("normal_texture"), path));
+    m.setReflectionTexture(textureFromNode(materialNode.child("reflect_texture"), path));
+    m.setRefractionTexture(textureFromNode(materialNode.child("refract_texture"), path));
 
     xml_node colorNode = materialNode.child("color");
     if (colorNode) {
         vector<float> colorComponents;
         colorComponents = splitStr<float>(colorNode.text().as_string(), ',');
-        m.setColor({ colorComponents[0], colorComponents[1], colorComponents[2], 1.0f });
+        m.setColor(glm::vec4(colorComponents[0], colorComponents[1], colorComponents[2], 1.0f));
     }
     xml_node shininessNode = materialNode.child("shininess");
     if (shininessNode) {
         m.setShininess(static_cast<GLubyte>(shininessNode.text().as_uint()));
+    }
+    xml_node refractCoefNode = materialNode.child("refract_coef");
+    if (refractCoefNode) {
+        m.setRefractionCoef(static_cast<float>(refractCoefNode.text().as_float()));
+    }
+    xml_node cullingNode = materialNode.child("culling");
+    if (cullingNode) {
+        m.setCulling(static_cast<bool>(cullingNode.text().as_bool()));
+    }
+    xml_node depthwriteNode = materialNode.child("depthwrite");
+    if (depthwriteNode) {
+        m.setDepthWrite(static_cast<bool>(depthwriteNode.text().as_bool()));
+    }
+
+    xml_node blendNode = materialNode.child("blend");
+    if (blendNode) {
+        if (blendNode.text().as_string() == "alpha") {
+            m.setBlendMode(BlendMode::ALPHA);
+        } else if (blendNode.text().as_string() == "add") {
+            m.setBlendMode(BlendMode::ADD);
+        } else if (blendNode.text().as_string() == "mul") {
+            m.setBlendMode(BlendMode::MUL);
+        }
     }
     return m;
 }
@@ -136,7 +194,12 @@ shared_ptr<Mesh> Mesh::load(const char* filename,
             if (normalsNode) {
                 normals = splitStr<float>(normalsNode.text().as_string(), ',');
             }
-			vector<Vertex> vertices = dataToVertices(coords, texcoords, normals);
+            xml_node tangentsNode = bufferNode.child("tangents");
+            vector<float> tangents;
+            if (tangentsNode) {
+                tangents = splitStr<float>(tangentsNode.text().as_string(), ',');
+            }
+			vector<Vertex> vertices = dataToVertices(coords, texcoords, normals, tangents);
 
 			shared_ptr<Buffer> buffer = make_shared<Buffer>(vertices.data(), vertices.size(), 
 															indices.data(), indices.size());

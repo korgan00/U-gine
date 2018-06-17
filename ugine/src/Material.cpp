@@ -1,6 +1,12 @@
 #include "Material.h"
 #include "State.h"
 
+#define TEXTURE_LAYER 0
+#define NORMALMAP_LAYER 1
+#define REFLECTION_TEX_LAYER 2
+#define REFRACTION_TEX_LAYER 3
+#define CUBEMAP_TEXTURE_LAYER 4
+#define CUBEMAP_NORMALMAP_LAYER 5
 
 Material::Material( const std::shared_ptr<Texture>& tex,
                     const std::shared_ptr<Shader>& shader) 
@@ -17,17 +23,35 @@ std::shared_ptr<Shader>& Material::getShader() {
 }
 void Material::setShader(const std::shared_ptr<Shader>& shader) {
     _shader = shader;
+    
+    // Matrix and global data
     _locMVP = getShader()->getLocation("mvp");
     _locMV = getShader()->getLocation("mv");
+    _locM = getShader()->getLocation("m");
     _locNormalMatrix = getShader()->getLocation("normalMat");
+    _locEyePos = getShader()->getLocation("eyePos");
+
+    // Textures
     _locIsTexturized = getShader()->getLocation("isTexturized");
     _locTexture = getShader()->getLocation("tex");
+    _locHasNormalTex = getShader()->getLocation("hasNormalTex");
+    _locNormalTex = getShader()->getLocation("normalTex");
+    _locHasReflectionTex = getShader()->getLocation("hasReflectionTex");
+    _locReflectionTex = getShader()->getLocation("reflectionTex");
+    _locHasRefractionTex = getShader()->getLocation("hasRefractionTex");
+    _locRefractionTex = getShader()->getLocation("refractionTex");
+    _locIsCubeMap = getShader()->getLocation("isCubeMap");
+    _locCubeTex = getShader()->getLocation("cubeTex");
+    _locCubeNormalTex = getShader()->getLocation("cubeNormalTex");
+
+    // Material properties
     _locColor = getShader()->getLocation("color");
     _locShininess = getShader()->getLocation("shininess");
+    _locRefractionCoef = getShader()->getLocation("refractionCoef");
     _locAmbient = getShader()->getLocation("ambient");
-    _locNumLights = getShader()->getLocation("numLights");
 
-	// get light properties location
+	// Light properties location
+    _locNumLights = getShader()->getLocation("numLights");
 	std::stringstream ss;
 	for (int i = 0; i < 8; i++) {
 		ss.str("");
@@ -92,17 +116,59 @@ void Material::setDepthWrite(bool enable) {
     _depthWrite = enable;
 }
 
+const std::shared_ptr<Texture>& Material::getReflectionTexture() const {
+    return _reflectionTex;
+}
+void Material::setReflectionTexture(const std::shared_ptr<Texture>& tex) {
+    _reflectionTex = tex;
+}
+
+const std::shared_ptr<Texture>& Material::getRefractionTexture() const {
+    return _refractionTex;
+}
+void Material::setRefractionTexture(const std::shared_ptr<Texture>& tex) {
+    _refractionTex = tex;
+}
+
+const std::shared_ptr<Texture>& Material::getNormalTexture() const {
+    return _normalTex;
+}
+void Material::setNormalTexture(const std::shared_ptr<Texture>& tex) {
+    _normalTex = tex;
+}
+
+float Material::getRefractionCoef() const {
+    return _refractionCoef;
+}
+void Material::setRefractionCoef(float coef) {
+    _refractionCoef = coef;
+}
+
 void Material::prepareShaderAttributes() {
     glm::mat4 mv = State::viewMatrix * State::modelMatrix;
     std::shared_ptr<Shader> s = getShader();
     s->use();
     s->setMatrix(_locMVP, State::projectionMatrix * mv);
     s->setMatrix(_locMV, mv);
+    s->setMatrix(_locM, State::modelMatrix);
     s->setMatrix(_locNormalMatrix, glm::transpose(glm::inverse(mv)));
-    s->setInt(_locTexture, 0);
+    s->setVec3(_locEyePos, State::eyePos);
+
+    s->setInt(_locTexture, TEXTURE_LAYER);
+    s->setInt(_locNormalTex, NORMALMAP_LAYER);
+    s->setInt(_locReflectionTex, REFLECTION_TEX_LAYER);
+    s->setInt(_locRefractionTex, REFRACTION_TEX_LAYER);
+    s->setInt(_locCubeTex, CUBEMAP_TEXTURE_LAYER);
+    s->setInt(_locCubeNormalTex, CUBEMAP_NORMALMAP_LAYER);
     s->setInt(_locIsTexturized, _tex ? 1 : 0);
+    s->setInt(_locHasNormalTex, _normalTex ? 1 : 0);
+    s->setInt(_locHasReflectionTex, _reflectionTex ? 1 : 0);
+    s->setInt(_locHasRefractionTex, _refractionTex ? 1 : 0);
+    s->setInt(_locIsCubeMap, _tex && _tex->isCube() ? 1 : 0);
+
     s->setVec4(_locColor, _color);
     s->setInt(_locShininess, _shininess);
+    s->setFloat(_locRefractionCoef, _refractionCoef);
     s->setVec3(_locAmbient, State::ambient);
     s->setInt(_locNumLights, _lighting ? State::lights.size() : 0);
 }
@@ -132,7 +198,16 @@ void Material::prepare() {
     prepareGlStates();
 
     if (_tex) {
-        _tex->bind();
+        _tex->bind(_tex->isCube() ? CUBEMAP_TEXTURE_LAYER : TEXTURE_LAYER);
+    }
+    if (_normalTex) {
+        _normalTex->bind(_normalTex->isCube() ? CUBEMAP_NORMALMAP_LAYER : NORMALMAP_LAYER);
+    }
+    if (_reflectionTex) { // is supposed to be a cube
+        _reflectionTex->bind(REFLECTION_TEX_LAYER);
+    }
+    if (_refractionTex) { // is supposed to be a cube
+        _refractionTex->bind(REFRACTION_TEX_LAYER);
     }
 
     if (_lighting) {

@@ -80,6 +80,7 @@ void initStates() {
     glEnable(GL_SCISSOR_TEST);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_BLEND);
+    glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 }
 
 GLFWwindow* initGLFW() {
@@ -110,6 +111,69 @@ Material particleMaterial(const char* name, BlendMode bm) {
 	return m;
 }
 
+std::shared_ptr<World> createWorld(std::shared_ptr<Camera> mainCamera) {
+    std::shared_ptr<World> world = std::make_shared<World>();
+    world->addEntity(mainCamera);
+
+    // MODEL
+    std::cout << "loading skybox... ";
+    std::shared_ptr<Mesh> meshSkybox = Mesh::load("data/skybox.msh.xml");
+    std::shared_ptr<Model> modelSkybox = std::make_shared<Model>(meshSkybox);
+    for (int i = 0; i < meshSkybox->getNumBuffers(); i++) {
+        meshSkybox->getMaterial(i).setLighting(false);
+    }
+    modelSkybox->setScale(glm::vec3(1.0f, 1.0f, 1.0f));
+    std::cout << "loaded" << std::endl;
+
+    world->addEntity(modelSkybox);
+
+    modelSkybox->setUpdateCB([mainCamera, modelSkybox](float dt) {
+        modelSkybox->setPosition(mainCamera->getPosition());
+    });
+
+    std::cout << "loading suzanne_refract... ";
+    std::shared_ptr<Mesh> meshSuzanne = Mesh::load("data/suzanne_refract.msh.xml");
+    std::shared_ptr<Model> modelSuzanne = std::make_shared<Model>(meshSuzanne);
+    modelSuzanne->setScale(glm::vec3(1.0f, 1.0f, 1.0f));
+    modelSuzanne->setPosition(glm::vec3(-2.0f, 0.0f, 2.0f));
+    std::cout << "loaded" << std::endl;
+
+    world->addEntity(modelSuzanne);
+
+    std::cout << "loading teapot_reflect... ";
+    std::shared_ptr<Mesh> meshTeapot = Mesh::load("data/teapot_reflect.msh.xml");
+    std::shared_ptr<Model> modelTeapot = std::make_shared<Model>(meshTeapot);
+    modelTeapot->setScale(glm::vec3(1.0f, 1.0f, 1.0f));
+    modelTeapot->setPosition(glm::vec3(2.0f, 0.0f, 2.0f));
+    std::cout << "loaded" << std::endl;
+
+    world->addEntity(modelTeapot);
+    
+    std::cout << "loading cube... ";
+    std::shared_ptr<Mesh> meshCube = Mesh::load("data/cube.msh.xml");
+    std::shared_ptr<Model> modelCube = std::make_shared<Model>(meshCube);
+    modelCube->setScale(glm::vec3(1.0f, 1.0f, 1.0f));
+    modelCube->setPosition(glm::vec3(-2.0f, 0.0f, -2.0f));
+    std::cout << (meshCube? "loaded" : "error") << std::endl;
+
+    world->addEntity(modelCube);
+
+    // LIGHTING
+    world->setAmbient({ 0.1f, 0.1f, 0.1f });
+
+    std::shared_ptr<Light> lightStatic = std::make_shared<Light>();
+    lightStatic->setType(Type::POINT);
+
+    world->addEntity(lightStatic);
+
+    lightStatic->setUpdateCB([mainCamera, lightStatic](float dt) {
+        lightStatic->setPosition(mainCamera->getPosition());
+    });
+
+    return world;
+}
+
+/*
 std::shared_ptr<World> createWorld(std::shared_ptr<Camera> mainCamera) {
     std::shared_ptr<World> world = std::make_shared<World>();
     world->addEntity(mainCamera);
@@ -158,24 +222,24 @@ std::shared_ptr<World> createWorld(std::shared_ptr<Camera> mainCamera) {
 
     return world;
 }
-
+*/
 std::shared_ptr<Camera> createMainCamera(GLFWwindow* window) {
 	int screenWidth, screenHeight;
 	glfwGetWindowSize(window, &screenWidth, &screenHeight);
 
     std::shared_ptr<Camera> mainCamera = std::make_shared<Camera>(glm::ivec2(screenWidth, screenHeight));
-    mainCamera->setClearColor(glm::vec3(0.0f, 0.0f, 0.0f));
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    mainCamera->setClearColor(glm::vec3(0.2f, 0.4f, 0.8f));
+    //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	
     std::shared_ptr<float> accumDt = std::make_shared<float>(0.0f);
 
     mainCamera->setUpdateCB([mainCamera, window, accumDt](float dt) {
-        mainCamera->setPosition(glm::vec3(0.0f, 5.0f, 0.0f));
         *accumDt += dt;
         glm::quat rot = glm::rotate(glm::quat(), glm::radians(*accumDt * 25), glm::vec3(0.0f, 1.0f, 0.0f));
-        rot = glm::rotate(rot, glm::radians(-30.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+        rot = glm::rotate(rot, glm::radians(-20.0f * sinf(*accumDt)), glm::vec3(1.0f, 0.0f, 0.0f));
         mainCamera->setRotation(rot);
-        mainCamera->move(glm::vec3(0.0f, 0.0f, 25.0f));
+        mainCamera->setPosition(glm::vec3(0.0f, 0.0f, 0.0f));
+        mainCamera->move(glm::vec3(0.0f, 0.0f, 10.0f));
     });
 
     /*

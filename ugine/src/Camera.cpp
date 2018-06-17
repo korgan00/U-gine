@@ -26,6 +26,7 @@ void Camera::setClearColor(const glm::vec3& color) {
 
 void Camera::prepare() {
 	State::projectionMatrix = _projection;
+    State::eyePos = getPosition();
 
 #define ROTATE(m) glm::rotate(m, -glm::angle(_rotation), glm::axis(_rotation))
 #define TRANSLATE(m) glm::translate(m, -_position)
