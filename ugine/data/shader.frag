@@ -94,7 +94,7 @@ void main() {
 	}
 	
 	vec3 mixedColor = mix(postLightColor.rgb, reflectionColor.rgb, reflectionColor.a);
-	mixedColor = mix(postLightColor.rgb, refractionColor.rgb, refractionColor.a);
+	mixedColor = mix(mixedColor.rgb, refractionColor.rgb, refractionColor.a);
 
 	gl_FragColor = vec4(mixedColor, 1.0f);
 }
