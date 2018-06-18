@@ -1,13 +1,6 @@
 #include "Material.h"
 #include "State.h"
 
-#define TEXTURE_LAYER 0
-#define NORMALMAP_LAYER 1
-#define REFLECTION_TEX_LAYER 2
-#define REFRACTION_TEX_LAYER 3
-#define CUBEMAP_TEXTURE_LAYER 4
-#define CUBEMAP_NORMALMAP_LAYER 5
-
 Material::Material( const std::shared_ptr<Texture>& tex,
                     const std::shared_ptr<Shader>& shader) 
 	: _tex(tex), _color(1.0f, 1.0f, 1.0f, 1.0f), _lighting(true), 
@@ -16,9 +9,17 @@ Material::Material( const std::shared_ptr<Texture>& tex,
 }
 
 const std::shared_ptr<Shader>& Material::getShader() const {
+    if (State::overrideShader) {
+        return State::overrideShader;
+    }
+
     return _shader ? _shader : State::defaultShader;
 }
 std::shared_ptr<Shader>& Material::getShader() {
+    if (State::overrideShader) {
+        return State::overrideShader;
+    }
+
     return _shader ? _shader : State::defaultShader;
 }
 void Material::setShader(const std::shared_ptr<Shader>& shader) {
@@ -43,6 +44,10 @@ void Material::setShader(const std::shared_ptr<Shader>& shader) {
     _locIsCubeMap = getShader()->getLocation("isCubeMap");
     _locCubeTex = getShader()->getLocation("cubeTex");
     _locCubeNormalTex = getShader()->getLocation("cubeNormalTex");
+
+    // Shadows
+    _locShadowTex = getShader()->getLocation("shadowDepthMap");
+    _locUseShadows = getShader()->getLocation("useShadows");
 
     // Material properties
     _locColor = getShader()->getLocation("color");
@@ -154,23 +159,25 @@ void Material::prepareShaderAttributes() {
     s->setMatrix(_locNormalMatrix, glm::transpose(glm::inverse(mv)));
     s->setVec3(_locEyePos, State::eyePos);
 
-    s->setInt(_locTexture, TEXTURE_LAYER);
+    s->setInt(_locTexture, ALBEDO_LAYER);
     s->setInt(_locNormalTex, NORMALMAP_LAYER);
     s->setInt(_locReflectionTex, REFLECTION_TEX_LAYER);
     s->setInt(_locRefractionTex, REFRACTION_TEX_LAYER);
-    s->setInt(_locCubeTex, CUBEMAP_TEXTURE_LAYER);
+    s->setInt(_locCubeTex, CUBEMAP_ALBEDO_LAYER);
     s->setInt(_locCubeNormalTex, CUBEMAP_NORMALMAP_LAYER);
+    s->setInt(_locShadowTex, SHADOWMAP_LAYER);
     s->setInt(_locIsTexturized, _tex ? 1 : 0);
     s->setInt(_locHasNormalTex, _normalTex ? 1 : 0);
     s->setInt(_locHasReflectionTex, _reflectionTex ? 1 : 0);
     s->setInt(_locHasRefractionTex, _refractionTex ? 1 : 0);
     s->setInt(_locIsCubeMap, _tex && _tex->isCube() ? 1 : 0);
+    s->setInt(_locUseShadows, State::shadows);
 
     s->setVec4(_locColor, _color);
     s->setInt(_locShininess, _shininess);
     s->setFloat(_locRefractionCoef, _refractionCoef);
     s->setVec3(_locAmbient, State::ambient);
-    s->setInt(_locNumLights, _lighting ? State::lights.size() : 0);
+    s->setInt(_locNumLights, _lighting ? State::lights.size() : static_cast<size_t>(0));
 }
 
 void Material::prepareGlStates() {
@@ -198,7 +205,7 @@ void Material::prepare() {
     prepareGlStates();
 
     if (_tex) {
-        _tex->bind(_tex->isCube() ? CUBEMAP_TEXTURE_LAYER : TEXTURE_LAYER);
+        _tex->bind(_tex->isCube() ? CUBEMAP_ALBEDO_LAYER : ALBEDO_LAYER);
     }
     if (_normalTex) {
         _normalTex->bind(_normalTex->isCube() ? CUBEMAP_NORMALMAP_LAYER : NORMALMAP_LAYER);

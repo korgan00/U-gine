@@ -11,6 +11,7 @@ private:
     std::shared_ptr<Shader> _shader;
     std::shared_ptr<Texture> _tex;
     std::shared_ptr<Texture> _normalTex;
+    std::shared_ptr<Texture> _shadowTex;
     std::shared_ptr<Texture> _reflectionTex;
     std::shared_ptr<Texture> _refractionTex;
 
@@ -40,6 +41,9 @@ private:
     GLint _locIsCubeMap;
     GLint _locCubeTex;
     GLint _locCubeNormalTex;
+
+    GLint _locShadowTex;
+    GLint _locUseShadows;
 
     GLint _locColor;
     GLint _locShininess;

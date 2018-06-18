@@ -24,7 +24,20 @@ void Camera::setClearColor(const glm::vec3& color) {
 	_clrColor = color;
 }
 
+void Camera::setFramebuffer(const std::shared_ptr<Framebuffer>& framebuffer) {
+    _framebuffer = framebuffer;
+}
+const std::shared_ptr<const Framebuffer> Camera::getFramebuffer() const {
+    return _framebuffer;
+}
+
 void Camera::prepare() {
+    if (_framebuffer) {
+        _framebuffer->bind();
+    } else {
+        Framebuffer::bindScreen();
+    }
+
 	State::projectionMatrix = _projection;
     State::eyePos = getPosition();
 

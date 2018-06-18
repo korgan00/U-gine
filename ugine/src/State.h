@@ -16,6 +16,9 @@ public:
 	static glm::mat4 				viewMatrix;
 	static glm::mat4 				modelMatrix;
 
+    static std::shared_ptr<Shader>	overrideShader;
+    static glm::mat4				depthBiasMatrix;
+    static bool					    shadows;
 
     static std::vector<std::shared_ptr<Light>>	lights;
     static glm::vec3						    ambient;

@@ -3,6 +3,7 @@
 #include <memory>
 #include "common.h"
 #include "Entity.h"
+#include "Framebuffer.h"
 
 class Camera : public Entity {
 protected:
@@ -10,6 +11,8 @@ protected:
 	glm::vec3 _clrColor;
 	glm::ivec4 _viewport;
 	glm::mat4 _projection;
+
+    std::shared_ptr<Framebuffer> _framebuffer;
 
 public:
 
@@ -25,6 +28,9 @@ public:
 
 	const glm::vec3& getClearColor() const;
 	void setClearColor(const glm::vec3& color);
+
+    void setFramebuffer(const std::shared_ptr<Framebuffer>& framebuffer);
+    const std::shared_ptr<const Framebuffer> getFramebuffer() const;
 
 	void prepare();
 };

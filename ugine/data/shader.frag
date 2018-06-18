@@ -7,6 +7,7 @@ struct Light
 };
 
 varying vec2 f_uv;
+varying vec2 f_shadowUV;
 varying vec3 f_normal;
 varying vec4 f_mvpos;
 varying vec3 f_vertexCoords;
@@ -23,6 +24,9 @@ uniform samplerCube refractionTex;
 uniform bool isCubeMap;
 uniform samplerCube cubeTex;
 uniform samplerCube cubeNormalTex;
+
+uniform bool useShadows;
+uniform sampler2D shadowDepthMap;
 
 uniform vec4 color;
 uniform int shininess;

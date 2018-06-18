@@ -3,11 +3,23 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
-Texture::Texture(int w, int h, GLuint id, bool isCube) : _size(w, h), _texId(id), _isCube(isCube) {}
+Texture::Texture(int w, int h, GLuint id, bool isCube) : _size(w, h), _texId(id), _isCube(isCube), _isDepth(false) {}
 Texture::~Texture() {
     if (_texId != 0) {
         glDeleteTextures(1, &_texId);
     }
+}
+
+Texture::Texture(glm::uvec2 size, bool isDepth) : _size(size), _isCube(false), _isDepth(isDepth) {
+    glGenTextures(1, &_texId);
+    glBindTexture(GL_TEXTURE_2D, _texId);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+    glTexImage2D(GL_TEXTURE_2D, 0, isDepth ? GL_DEPTH_COMPONENT32 : GL_RGBA, size.x, size.y, 0, isDepth ? GL_DEPTH_COMPONENT : GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
 }
 
 std::shared_ptr<Texture> Texture::load(const char* filename) {
@@ -112,4 +124,7 @@ void Texture::bind(size_t layer) const {
 
 bool Texture::isCube() const {
     return _isCube;
+}
+bool Texture::isDepth() const {
+    return _isDepth;
 }
