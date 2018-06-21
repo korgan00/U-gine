@@ -7,7 +7,7 @@ struct Light
 };
 
 varying vec2 f_uv;
-varying vec2 f_shadowUV;
+varying vec4 f_shadowUV;
 varying vec3 f_normal;
 varying vec4 f_mvpos;
 varying vec3 f_vertexCoords;
@@ -17,16 +17,18 @@ uniform bool isTexturized;
 uniform sampler2D tex;
 uniform bool hasNormalTex;
 uniform sampler2D normalTex;
+
+uniform bool useShadows;
+uniform sampler2D shadowDepthMap;
+
 uniform bool hasReflectionTex;
 uniform samplerCube reflectionTex;
 uniform bool hasRefractionTex;
 uniform samplerCube refractionTex;
+
 uniform bool isCubeMap;
 uniform samplerCube cubeTex;
 uniform samplerCube cubeNormalTex;
-
-uniform bool useShadows;
-uniform sampler2D shadowDepthMap;
 
 uniform vec4 color;
 uniform int shininess;
@@ -48,18 +50,26 @@ void main() {
 		N = normalize(normalize(texNormal * 2.0 - 1.0) * TBN);
 	}
 
-	vec3 H, L, LtoPos;
+	vec3 H, L;
 	float atten, angle, NdotH;
+
+	float shadowed = 1.0;
+	if (useShadows) {
+		if (texture2D(shadowDepthMap, f_shadowUV.xy).z < (f_shadowUV.z - 0.0009)) {
+			shadowed = 0.0;
+		}
+		//occludded = texture2D(shadowDepthMap, f_shadowUV.xy).z < f_shadowUV.z ? 1.0 : 0.0;
+	}
 	
 	for(int i = 0; i < numLights; ++i) {
 		currLight = lights[i];
 		
-		atten = 1.0;
+		atten = shadowed;
 		L = currLight.vector.xyz;
 		
 		if (currLight.vector.w == 1.0) {
 			L = L - f_mvpos.xyz;
-			atten = 1.0 / (1.0 + currLight.linearAttenuation * length(LtoPos));
+			atten = 1.0 / (1.0 + currLight.linearAttenuation * length(L));
 		}
 		
 		L = normalize(L);

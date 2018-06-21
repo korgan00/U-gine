@@ -1,5 +1,6 @@
 #include "Material.h"
 #include "State.h"
+#include <iostream>
 
 Material::Material( const std::shared_ptr<Texture>& tex,
                     const std::shared_ptr<Shader>& shader) 
@@ -9,17 +10,9 @@ Material::Material( const std::shared_ptr<Texture>& tex,
 }
 
 const std::shared_ptr<Shader>& Material::getShader() const {
-    if (State::overrideShader) {
-        return State::overrideShader;
-    }
-
     return _shader ? _shader : State::defaultShader;
 }
 std::shared_ptr<Shader>& Material::getShader() {
-    if (State::overrideShader) {
-        return State::overrideShader;
-    }
-
     return _shader ? _shader : State::defaultShader;
 }
 void Material::setShader(const std::shared_ptr<Shader>& shader) {
@@ -29,6 +22,7 @@ void Material::setShader(const std::shared_ptr<Shader>& shader) {
     _locMVP = getShader()->getLocation("mvp");
     _locMV = getShader()->getLocation("mv");
     _locM = getShader()->getLocation("m");
+    _locDepthBiasMatrix = getShader()->getLocation("depthBiasMatrix");
     _locNormalMatrix = getShader()->getLocation("normalMat");
     _locEyePos = getShader()->getLocation("eyePos");
 
@@ -157,6 +151,7 @@ void Material::prepareShaderAttributes() {
     s->setMatrix(_locMV, mv);
     s->setMatrix(_locM, State::modelMatrix);
     s->setMatrix(_locNormalMatrix, glm::transpose(glm::inverse(mv)));
+    s->setMatrix(_locDepthBiasMatrix, State::depthBiasMatrix);
     s->setVec3(_locEyePos, State::eyePos);
 
     s->setInt(_locTexture, ALBEDO_LAYER);
@@ -199,27 +194,33 @@ void Material::prepareGlStates() {
 }
 
 void Material::prepare() {
-    
-    prepareShaderAttributes();
-
     prepareGlStates();
 
-    if (_tex) {
-        _tex->bind(_tex->isCube() ? CUBEMAP_ALBEDO_LAYER : ALBEDO_LAYER);
-    }
-    if (_normalTex) {
-        _normalTex->bind(_normalTex->isCube() ? CUBEMAP_NORMALMAP_LAYER : NORMALMAP_LAYER);
-    }
-    if (_reflectionTex) { // is supposed to be a cube
-        _reflectionTex->bind(REFLECTION_TEX_LAYER);
-    }
-    if (_refractionTex) { // is supposed to be a cube
-        _refractionTex->bind(REFRACTION_TEX_LAYER);
-    }
+    if (State::overrideShader) {
+        State::overrideShader->use();
+        State::overrideShader->setMatrix(
+            State::overrideShader->getLocation("mvp"),
+            State::projectionMatrix * State::viewMatrix * State::modelMatrix);
+    } else {
+        prepareShaderAttributes();
 
-    if (_lighting) {
-        for (int i = 0; i < State::lights.size(); ++i) {
-            State::lights[i]->prepare(_locLightAttribs[i], getShader());
+        if (_tex) {
+            _tex->bind(_tex->isCube() ? CUBEMAP_ALBEDO_LAYER : ALBEDO_LAYER);
+        }
+        if (_normalTex) {
+            _normalTex->bind(_normalTex->isCube() ? CUBEMAP_NORMALMAP_LAYER : NORMALMAP_LAYER);
+        }
+        if (_reflectionTex) { // is supposed to be a cube
+            _reflectionTex->bind(REFLECTION_TEX_LAYER);
+        }
+        if (_refractionTex) { // is supposed to be a cube
+            _refractionTex->bind(REFRACTION_TEX_LAYER);
+        }
+
+        if (_lighting) {
+            for (int i = 0; i < State::lights.size(); ++i) {
+                State::lights[i]->prepare(_locLightAttribs[i], getShader());
+            }
         }
     }
 }

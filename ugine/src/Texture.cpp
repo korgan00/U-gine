@@ -19,7 +19,7 @@ Texture::Texture(glm::uvec2 size, bool isDepth) : _size(size), _isCube(false), _
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-    glTexImage2D(GL_TEXTURE_2D, 0, isDepth ? GL_DEPTH_COMPONENT32 : GL_RGBA, size.x, size.y, 0, isDepth ? GL_DEPTH_COMPONENT : GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+    glTexImage2D(GL_TEXTURE_2D, 0, isDepth ? GL_DEPTH_COMPONENT24 : GL_RGBA, size.x, size.y, 0, isDepth ? GL_DEPTH_COMPONENT : GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
 }
 
 std::shared_ptr<Texture> Texture::load(const char* filename) {

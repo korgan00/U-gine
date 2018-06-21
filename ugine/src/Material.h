@@ -27,6 +27,7 @@ private:
     GLint _locMVP;
     GLint _locMV;
     GLint _locM;
+    GLint _locDepthBiasMatrix;
     GLint _locEyePos;
     GLint _locNormalMatrix;
 

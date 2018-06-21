@@ -2,6 +2,7 @@
 #include "World.h"
 #include "State.h"
 #include <memory>
+#include <iostream>
 using namespace std;
 
 typedef vector<shared_ptr<Entity>>::iterator entityIt;
@@ -28,6 +29,7 @@ std::shared_ptr<Shader> createDepthShader() {
 
 World::World() {
     std::shared_ptr<Texture> depthTex = make_shared<Texture>(glm::ivec2(1024, 1024), true);
+    //std::shared_ptr<Texture> colorTex = make_shared<Texture>(glm::ivec2(1024, 1024), false);
     std::shared_ptr<Framebuffer> frameBuffer = make_shared<Framebuffer>(nullptr, depthTex);
     _depthCamera = make_shared<Camera>(depthTex->getSize());
     _depthCamera->setFramebuffer(frameBuffer);
@@ -86,7 +88,7 @@ size_t World::getNumEntities() const {
 }
 
 void World::setShadows(bool enable) {
-    State::shadows = enable;
+    _shadowsEnabled = enable;
 }
 void World::setDepthOrtho(float left, float right,
                    float bottom, float top, 
@@ -137,20 +139,25 @@ void World::castShadows() {
     State::overrideShader = _depthShader;
 
     glm::vec3 lightPosNorm = glm::normalize(shadowCasterLight->getPosition());
-    glm::vec3 camPosition = lightPosNorm * _far;
-    _depthCamera->setPosition(camPosition);
+    glm::vec3 camPosition = lightPosNorm * _far * 0.5f;
 
     glm::vec3 lightRayDir = -lightPosNorm;
-    float pitch = glm::asin(lightRayDir.y);
+
+    float pitch = asin(lightRayDir.y);
     float yaw = atan2(-lightRayDir.x, -lightRayDir.z);
-    float roll = 0;
     glm::quat rotation = glm::rotate(glm::quat(), yaw, glm::vec3(0.0f, 1.0f, 0.0f));
-    rotation = glm::rotate(glm::quat(), pitch, glm::vec3(1.0f, 0.0f, 0.0f));
+    rotation = glm::rotate(rotation, pitch, glm::vec3(1.0f, 0.0f, 0.0f));
+    
+    _depthCamera->setRotation(rotation);
+    _depthCamera->setPosition(camPosition);
+
+    _depthCamera->setClearColor(glm::vec3(0.7f, 0.5f, 0.2f));
+    _depthCamera->setProjection(_depthOrto);
 
     _depthCamera->prepare();
     drawEntities();
 
-    const glm::mat4 bias(glm::vec4(0.5f, 0, 0, 0.5f), glm::vec4(0, 0.5f, 0, 0.5f), glm::vec4(0, 0, 0.5f, 0.5f), glm::vec4(0, 0, 0, 1.0f));
+    const glm::mat4 bias(glm::vec4(0.5f, 0, 0, 0), glm::vec4(0, 0.5f, 0, 0), glm::vec4(0, 0, 0.5f, 0), glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
     State::depthBiasMatrix = bias * State::projectionMatrix * State::viewMatrix;
 
     _depthCamera->getFramebuffer()->getDepthTexture()->bind(SHADOWMAP_LAYER);
@@ -160,6 +167,7 @@ void World::castShadows() {
 
 void World::draw() {
     // Pre pass
+    State::shadows = _shadowsEnabled;
     if (_shadowsEnabled) {
         castShadows();
     }

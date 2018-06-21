@@ -16,7 +16,7 @@ attribute vec2 vuv;
 attribute vec3 vtangent;
 
 varying vec2 f_uv;
-varying vec2 f_shadowUV;
+varying vec4 f_shadowUV;
 varying vec3 f_normal;
 varying vec4 f_mvpos;
 varying vec3 f_vertexCoords;
@@ -24,7 +24,7 @@ varying mat3 TBN;
 
 void main() {
 	gl_Position = mvp * vec4(vpos, 1);
-	f_shadowUV = depthBiasMatrix * vec4(vpos, 1);
+	f_shadowUV = depthBiasMatrix * m * vec4(vpos, 1);
 	f_uv = vuv;
 	f_normal = (normalMat * vec4(vnormal, 1.0)).xyz;
 	f_mvpos = mv * vec4(vpos, 1);
