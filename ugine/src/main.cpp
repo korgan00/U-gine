@@ -130,10 +130,10 @@ std::shared_ptr<World> createWorld(std::shared_ptr<Camera> mainCamera) {
     // LIGHTING
     std::shared_ptr<Light> lightSun = std::make_shared<Light>();
     lightSun->setType(Type::DIRECTIONAL);
-    std::shared_ptr<float> angle = std::make_shared<float>(90.0f);
+    std::shared_ptr<float> angle = std::make_shared<float>(0.0f);
 
     lightSun->setUpdateCB([lightSun, angle](float dt) {
-        *angle += dt * 64.0f;
+        *angle += dt * 32.0f;
         glm::quat rot = glm::rotate(glm::quat(), glm::radians(*angle), glm::vec3(0.0f, 1.0f, 0.0f));
         rot = glm::rotate(rot, glm::radians(-30.0f), glm::vec3(1.0f, 0.0f, 0.0f));
         lightSun->setRotation(rot);
