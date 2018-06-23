@@ -29,5 +29,5 @@ public:
 	void				move(const glm::vec3& vec);	// Ver en las diapositivas
 
 	virtual void		update(float deltaTime) { if (_updateCB) _updateCB(deltaTime); }
-	virtual void		draw() {}
+	virtual void		draw() {  }
 };

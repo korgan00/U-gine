@@ -118,30 +118,15 @@ std::shared_ptr<World> createWorld(std::shared_ptr<Camera> mainCamera) {
 
     // MODEL
     std::cout << "loading scene... ";
-    std::shared_ptr<Mesh> mesh = Mesh::load("data/scene.msh.xml");
+    std::shared_ptr<Mesh> mesh = Mesh::load("data/dwarf.msh.xml");
     std::shared_ptr<Model> model = std::make_shared<Model>(mesh);
     
-    model->setScale(glm::vec3(1.0f, 1.0f, 1.0f));
+    model->animate(true);
+    model->setScale(glm::vec3(0.1f, 0.1f, 0.1f));
     model->setPosition(glm::vec3(0.0f, 0.0f, 0.0f));
     std::cout << "loaded" << std::endl;
 
     world->addEntity(model);
-
-    // LIGHTING
-    std::shared_ptr<Light> lightSun = std::make_shared<Light>();
-    lightSun->setType(Type::DIRECTIONAL);
-    std::shared_ptr<float> angle = std::make_shared<float>(0.0f);
-
-    lightSun->setUpdateCB([lightSun, angle](float dt) {
-        *angle += dt * 32.0f;
-        glm::quat rot = glm::rotate(glm::quat(), glm::radians(*angle), glm::vec3(0.0f, 1.0f, 0.0f));
-        rot = glm::rotate(rot, glm::radians(-30.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-        lightSun->setRotation(rot);
-        lightSun->setPosition(glm::vec3(0.0f, 0.0f, 0.0f));
-        lightSun->move(glm::vec3(0.0f, 0.0f, 1.0f));
-    });
-
-    world->addEntity(lightSun);
 
     // WORLD CONFIG
     world->setAmbient({ 0.2f, 0.2f, 0.2f });
@@ -156,12 +141,11 @@ std::shared_ptr<Camera> createMainCamera(GLFWwindow* window) {
 	glfwGetWindowSize(window, &screenWidth, &screenHeight);
 
     std::shared_ptr<Camera> mainCamera = std::make_shared<Camera>(glm::ivec2(screenWidth, screenHeight));
-    mainCamera->setClearColor(glm::vec3(0.2f, 0.4f, 0.8f));
-    //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-    glm::quat rot = glm::rotate(glm::quat(), glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-    rot = glm::rotate(rot, glm::radians(-30.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    mainCamera->setClearColor(glm::vec3(0.2f, 0.2f, 0.2f));
+    glm::quat rot = glm::rotate(glm::quat(), glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    rot = glm::rotate(rot, glm::radians(-15.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     mainCamera->setRotation(rot);
-    mainCamera->setPosition(glm::vec3(0.0f, 8.0f, -12.0f));
+    mainCamera->setPosition(glm::vec3(0.0f, 8.0f, 15.0f));
 	
     return mainCamera;
 }

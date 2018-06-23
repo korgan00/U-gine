@@ -8,8 +8,8 @@
 
 class State {
 protected:
-	State();
-	~State();
+    State() {}
+	~State() {}
 public:
 	static std::shared_ptr<Shader>	defaultShader;
 	static glm::mat4 				projectionMatrix;
@@ -23,4 +23,8 @@ public:
     static std::vector<std::shared_ptr<Light>>	lights;
     static glm::vec3						    ambient;
     static glm::vec3						    eyePos;
+
+    static bool                                     animation;
+    static std::shared_ptr<std::vector<glm::mat4>>  animMatrices;
+
 };

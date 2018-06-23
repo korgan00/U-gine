@@ -54,17 +54,22 @@ vector<T> splitStr(const std::string& str, char delim) {
 	return elems;
 }
 
-vector<Vertex> dataToVertices(vector<float> coords, vector<float> texcoords, vector<float> normals, vector<float> tangents) {
+vector<Vertex> dataToVertices(vector<float> coords, vector<float> texcoords, vector<float> normals, 
+                              vector<float> tangents, vector<float> boneIndices, vector<float> boneWeights) {
 	vector<Vertex> vertices;
 
 	auto coordsIt = coords.begin();
     auto texcoordsIt = texcoords.begin();
     auto normalsIt = normals.begin();
     auto tangentsIt = tangents.begin();
+    auto boneIndicesIt = boneIndices.begin();
+    auto boneWeightsIt = boneWeights.begin();
 
     bool hasTexCoords = texcoords.size() != 0;
     bool hasNormals = normals.size() != 0;
     bool hasTangents = tangents.size() != 0;
+    bool hasBoneIndices = boneIndices.size() != 0;
+    bool hasBoneWeights = boneWeights.size() != 0;
 
 	while (coordsIt != coords.end()) {
 		float x = *(coordsIt++);
@@ -94,7 +99,25 @@ vector<Vertex> dataToVertices(vector<float> coords, vector<float> texcoords, vec
             float z = *(tangentsIt++);
             tangent = { x, y, z };
         }
-		vertices.push_back({position, texCoords, normal, tangent});
+
+        glm::vec4 boneIdxs;
+        if (hasBoneIndices) {
+            float x = *(boneIndicesIt++);
+            float y = *(boneIndicesIt++);
+            float z = *(boneIndicesIt++);
+            float w = *(boneIndicesIt++);
+            boneIdxs = { x, y, z, w };
+        }
+
+        glm::vec4 boneW;
+        if (hasBoneWeights) {
+            float x = *(boneWeightsIt++);
+            float y = *(boneWeightsIt++);
+            float z = *(boneWeightsIt++);
+            float w = *(boneWeightsIt++);
+            boneW = { x, y, z, w };
+        }
+		vertices.push_back({position, texCoords, normal, tangent, boneIdxs, boneW});
 	}
 
 	return vertices;
@@ -170,6 +193,93 @@ Material nodeToMaterial(pugi::xml_node materialNode, const char* filename, const
     return m;
 }
 
+void nodeToBuffers(shared_ptr<Mesh> mesh, pugi::xml_node buffersNode, 
+                   const char* filename, const shared_ptr<Shader>& shader) {
+    using namespace pugi;
+
+    for (xml_node bufferNode = buffersNode.child("buffer"); bufferNode; bufferNode = bufferNode.next_sibling("buffer")) {
+        vector<float> coords = splitStr<float>(bufferNode.child("coords").text().as_string(), ',');
+        vector<GLushort> indices = splitStr<GLushort>(bufferNode.child("indices").text().as_string(), ',');
+        xml_node texcoordsNode = bufferNode.child("texcoords");
+        vector<float> texcoords;
+        if (texcoordsNode) {
+            texcoords = splitStr<float>(texcoordsNode.text().as_string(), ',');
+        }
+        xml_node normalsNode = bufferNode.child("normals");
+        vector<float> normals;
+        if (normalsNode) {
+            normals = splitStr<float>(normalsNode.text().as_string(), ',');
+        }
+        xml_node tangentsNode = bufferNode.child("tangents");
+        vector<float> tangents;
+        if (tangentsNode) {
+            tangents = splitStr<float>(tangentsNode.text().as_string(), ',');
+        }
+
+        xml_node boneIndicesNode = bufferNode.child("bone_indices");
+        vector<float> boneIndices;
+        if (boneIndicesNode) {
+            boneIndices = splitStr<float>(boneIndicesNode.text().as_string(), ',');
+        }
+        xml_node boneWeightsNode = bufferNode.child("bone_weights");
+        vector<float> boneWeights;
+        if (boneWeightsNode) {
+            boneWeights = splitStr<float>(boneWeightsNode.text().as_string(), ',');
+        }
+
+        vector<Vertex> vertices = dataToVertices(coords, texcoords, normals, tangents, boneIndices, boneWeights);
+
+        shared_ptr<Buffer> buffer = make_shared<Buffer>(vertices.data(), vertices.size(),
+            indices.data(), indices.size());
+
+        mesh->addBuffer(buffer, nodeToMaterial(bufferNode.child("material"), filename, shader));
+    }
+}
+
+
+void nodeToBones(shared_ptr<Mesh> mesh, pugi::xml_node bonesNode,
+                 const char* filename, const shared_ptr<Shader>& shader) {
+    using namespace pugi;
+
+    for (xml_node boneNode = bonesNode.child("bone"); boneNode; boneNode = boneNode.next_sibling("bone")) {
+        
+        xml_node nameNode = boneNode.child("name");
+        xml_node parentNode = boneNode.child("parent");
+        int parentNodeIdx = -1;
+        if (parentNode) {
+            parentNodeIdx = mesh->getBoneIndex(parentNode.text().as_string());
+        }
+        Bone currentBone(nameNode.text().as_string(), parentNodeIdx);
+
+        xml_node invPoseNode = boneNode.child("inv_pose");
+        vector<float> invPoseValues = splitStr<float>(invPoseNode.text().as_string(), ',');
+        currentBone.setInvPoseMatrix(glm::mat4( invPoseValues[0],  invPoseValues[1],  invPoseValues[2],  invPoseValues[3],
+                                                invPoseValues[4],  invPoseValues[5],  invPoseValues[6],  invPoseValues[7],
+                                                invPoseValues[8],  invPoseValues[9],  invPoseValues[10], invPoseValues[11],
+                                                invPoseValues[12], invPoseValues[13], invPoseValues[14], invPoseValues[15]));
+
+        xml_node positionsNode = boneNode.child("positions");
+        vector<float> positionValues = splitStr<float>(positionsNode.text().as_string(), ',');
+        for (int i = 0; i < positionValues.size(); i +=4) {
+            currentBone.addPosition(static_cast<uint16_t>(positionValues[i]), { positionValues[i + 1], positionValues[i + 2], positionValues[i + 3] });
+        }
+
+        xml_node rotationsNode = boneNode.child("rotations");
+        vector<float> rotationValues = splitStr<float>(rotationsNode.text().as_string(), ',');
+        for (int i = 0; i < rotationValues.size(); i += 5) {
+            currentBone.addRotation(static_cast<uint16_t>(rotationValues[i]), glm::quat(rotationValues[i + 1], rotationValues[i + 2], rotationValues[i + 3], rotationValues[i + 4]));
+        }
+
+        xml_node scalesNode = boneNode.child("scales");
+        vector<float> scaleValues = splitStr<float>(scalesNode.text().as_string(), ',');
+        for (int i = 0; i < scaleValues.size(); i += 4) {
+            currentBone.addScale(static_cast<uint16_t>(scaleValues[i]), { scaleValues[i + 1], scaleValues[i + 2], scaleValues[i + 3] });
+        }
+
+        mesh->addBone(currentBone);
+    }
+}
+
 shared_ptr<Mesh> Mesh::load(const char* filename, 
 							const shared_ptr<Shader>& shader) {
 	using namespace pugi;
@@ -179,35 +289,39 @@ shared_ptr<Mesh> Mesh::load(const char* filename,
 	xml_parse_result result = doc.load_file(filename);
 	if (result) {
 		xml_node meshNode = doc.child("mesh");
-		xml_node buffersNode = meshNode.child("buffers");
 
-		for (xml_node bufferNode = buffersNode.child("buffer"); bufferNode; bufferNode = bufferNode.next_sibling("buffer")) {
-			vector<float> coords = splitStr<float>(bufferNode.child("coords").text().as_string(), ',');
-			vector<GLushort> indices = splitStr<GLushort>(bufferNode.child("indices").text().as_string(), ',');
-			xml_node texcoordsNode = bufferNode.child("texcoords");
-			vector<float> texcoords;
-			if (texcoordsNode) {
-				texcoords = splitStr<float>(texcoordsNode.text().as_string(), ',');
-			}
-            xml_node normalsNode = bufferNode.child("normals");
-            vector<float> normals;
-            if (normalsNode) {
-                normals = splitStr<float>(normalsNode.text().as_string(), ',');
-            }
-            xml_node tangentsNode = bufferNode.child("tangents");
-            vector<float> tangents;
-            if (tangentsNode) {
-                tangents = splitStr<float>(tangentsNode.text().as_string(), ',');
-            }
-			vector<Vertex> vertices = dataToVertices(coords, texcoords, normals, tangents);
+        xml_node buffersNode = meshNode.child("buffers");
+        nodeToBuffers(mesh, buffersNode, filename, shader);
 
-			shared_ptr<Buffer> buffer = make_shared<Buffer>(vertices.data(), vertices.size(), 
-															indices.data(), indices.size());
-			
-			mesh->addBuffer(buffer, nodeToMaterial(bufferNode.child("material"), filename, shader));
-		}
+        xml_node lastFrameNode = meshNode.child("last_frame");
+        mesh->setLastFrame(static_cast<GLushort>(lastFrameNode.text().as_uint()));
+
+        xml_node bonesNode = meshNode.child("bones");
+        nodeToBones(mesh, bonesNode, filename, shader);
+
 		return mesh;
 	}
 
 	return nullptr;
+}
+
+void Mesh::addBone(const Bone& bone) {
+    _boneList.push_back(bone);
+}
+const std::vector<Bone>& Mesh::getBones() const {
+    return _boneList;
+}
+GLushort Mesh::getLastFrame() const {
+    return _lastFrame;
+}
+void Mesh::setLastFrame(GLushort lastFrame) {
+    _lastFrame = lastFrame;
+}
+int Mesh::getBoneIndex(const char* name) const {
+    for (int i = 0; i < _boneList.size(); i++) {
+        if (strcmp(_boneList[i].getName(), name) == 0) {
+            return i;
+        }
+    }
+    return -1;
 }

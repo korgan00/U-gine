@@ -46,7 +46,7 @@ void main() {
 	Light currLight;
 	vec3 N = normalize(f_normal);
 	if (hasNormalTex) {
-		vec3 texNormal = texture(normalTex, f_uv).rgb;
+		vec3 texNormal = texture2D(normalTex, f_uv).rgb;
 		N = normalize(normalize(texNormal * 2.0 - 1.0) * TBN);
 	}
 
@@ -79,7 +79,7 @@ void main() {
 		if (shininess > 0 && angle > 0.0) {
 			H = normalize(L - normalize(f_mvpos.xyz));
 			NdotH = clamp(dot(N,H.xyz), 0.0, 1.0);
-			specularContribFactor += pow(NdotH, shininess) * atten;
+			specularContribFactor += pow(NdotH, float(shininess)) * atten;
 		}
 	}
 	vec4 specularContrib = vec4(specularContribFactor, specularContribFactor, specularContribFactor, 0.0);
@@ -110,5 +110,5 @@ void main() {
 	vec3 mixedColor = mix(postLightColor.rgb, reflectionColor.rgb, reflectionColor.a);
 	mixedColor = mix(mixedColor.rgb, refractionColor.rgb, refractionColor.a);
 
-	gl_FragColor = vec4(mixedColor, 1.0f);
+	gl_FragColor = vec4(mixedColor, 1.0);
 }

@@ -15,6 +15,8 @@ protected:
     GLuint _locUV;
     GLuint _locNorm;
     GLuint _locTan;
+    GLuint _locBoneIndices;
+    GLuint _locBoneWeights;
 
 	GLuint createSubshader(const char* code, GLuint type);
 	void setErrorLength(GLuint length);

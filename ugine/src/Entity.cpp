@@ -1,5 +1,6 @@
 
 #include "Entity.h"
+#include "State.h"
 
 unsigned int Entity::currendId = 0;
 

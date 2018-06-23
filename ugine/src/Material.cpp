@@ -1,6 +1,7 @@
 #include "Material.h"
 #include "State.h"
 #include <iostream>
+#include <algorithm>
 
 Material::Material( const std::shared_ptr<Texture>& tex,
                     const std::shared_ptr<Shader>& shader) 
@@ -16,6 +17,7 @@ std::shared_ptr<Shader>& Material::getShader() {
     return _shader ? _shader : State::defaultShader;
 }
 void Material::setShader(const std::shared_ptr<Shader>& shader) {
+    std::stringstream ss;
     _shader = shader;
     
     // Matrix and global data
@@ -26,6 +28,13 @@ void Material::setShader(const std::shared_ptr<Shader>& shader) {
     _locNormalMatrix = getShader()->getLocation("normalMat");
     _locEyePos = getShader()->getLocation("eyePos");
 
+    // Animation
+    _locSkinned = getShader()->getLocation("skinned");
+    for (int i = 0; i < MAX_ANIM_MATRICES_COUNT; i++) {
+        ss.str("");
+        ss << "animMatrices[" << i << "]";
+        _locAnimMatrices[i] = getShader()->getLocation(ss.str().c_str());
+    }
     // Textures
     _locIsTexturized = getShader()->getLocation("isTexturized");
     _locTexture = getShader()->getLocation("tex");
@@ -51,7 +60,6 @@ void Material::setShader(const std::shared_ptr<Shader>& shader) {
 
 	// Light properties location
     _locNumLights = getShader()->getLocation("numLights");
-	std::stringstream ss;
 	for (int i = 0; i < 8; i++) {
 		ss.str("");
 		ss << "lights[" << i << "].color";
@@ -153,6 +161,14 @@ void Material::prepareShaderAttributes() {
     s->setMatrix(_locNormalMatrix, glm::transpose(glm::inverse(mv)));
     s->setMatrix(_locDepthBiasMatrix, State::depthBiasMatrix);
     s->setVec3(_locEyePos, State::eyePos);
+
+    s->setInt(_locSkinned, State::animation ? 1 : 0);
+    if (State::animation) {
+        size_t matricesCount = std::min(State::animMatrices->size(), static_cast<size_t>(MAX_ANIM_MATRICES_COUNT));
+        for (int i = 0; i < matricesCount; i++) {
+            s->setMatrix(_locAnimMatrices[i], State::animMatrices->at(i));
+        }
+    }
 
     s->setInt(_locTexture, ALBEDO_LAYER);
     s->setInt(_locNormalTex, NORMALMAP_LAYER);

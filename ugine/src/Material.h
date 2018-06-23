@@ -6,8 +6,11 @@
 #include "LightAttribsLocation.h"
 #include "BlendMode.h"
 
+#define MAX_ANIM_MATRICES_COUNT 64
+
 class Material {
 private:
+
     std::shared_ptr<Shader> _shader;
     std::shared_ptr<Texture> _tex;
     std::shared_ptr<Texture> _normalTex;
@@ -30,6 +33,10 @@ private:
     GLint _locDepthBiasMatrix;
     GLint _locEyePos;
     GLint _locNormalMatrix;
+
+
+    GLint _locSkinned;
+    GLint _locAnimMatrices[MAX_ANIM_MATRICES_COUNT];
 
     GLint _locIsTexturized;
     GLint _locTexture;

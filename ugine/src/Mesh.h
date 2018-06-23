@@ -2,6 +2,7 @@
 
 #include <memory>
 #include "Buffer.h"
+#include "Bone.h"
 #include "Material.h"
 #include <vector>
 #include <utility>
@@ -10,6 +11,8 @@ class Mesh {
 protected:
 	std::vector<std::pair<std::shared_ptr<Buffer>, Material>> _bufferList;
 
+    std::vector<Bone> _boneList;
+    GLushort _lastFrame;
 public:
     Mesh();
 
@@ -26,5 +29,11 @@ public:
 	void draw();
 
 	static std::shared_ptr<Mesh> load(const char* filename, const std::shared_ptr<Shader>& shader = nullptr);
+    
+    void addBone(const Bone& bone);
+    const std::vector<Bone>& getBones() const;
+    GLushort getLastFrame() const;
+    void setLastFrame(GLushort lastFrame);
+    int getBoneIndex(const char* name) const;
 
 };
