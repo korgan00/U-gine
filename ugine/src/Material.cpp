@@ -188,7 +188,7 @@ void Material::prepareShaderAttributes() {
     s->setInt(_locShininess, _shininess);
     s->setFloat(_locRefractionCoef, _refractionCoef);
     s->setVec3(_locAmbient, State::ambient);
-    s->setInt(_locNumLights, _lighting ? State::lights.size() : static_cast<size_t>(0));
+    s->setInt(_locNumLights, _lighting ? static_cast<int>(State::lights.size()) : 0);
 }
 
 void Material::prepareGlStates() {

@@ -87,6 +87,10 @@ glm::quat Bone::calculateRotation(float frame) const {
             return glm::slerp(a.second, b.second, mixAmount);
         }
     }
+    if (_frameRotations.size() > 0) {
+        return _frameRotations.back().second;
+    }
+    return glm::quat();
 }
 glm::vec3 Bone::calculateScale(float frame) const {
     return calculateMix(_frameScales, frame);
